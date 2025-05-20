@@ -1,0 +1,42 @@
+---
+import { Image } from "astro:assets";
+import HeroImg from "@/hero.png";
+import { QUOTE, SITE_TITLE } from "@/consts";
+import type { ACTION_ERROR_CODES } from "astro:actions";
+---
+
+<div class="hero-bg hidden md:block h-screen hero-bg-animate absolute top-0"></div>
+<section
+  class="h-screen !z-[20] relative w-full grid grid-cols-1 grid-rows-0 sm:grid-cols-2 md:grid-cols-2 gap-0 items-center"
+  id="hero"
+>
+  <div class="grid place-items-center">
+    <div class="text-center -mt-36">
+      <h1 class="font-bold text-5xl sm:text-8xl">{`<${SITE_TITLE} />`}</h1>
+      <h2 class="text-xl sm:text-4xl opacity-95">
+        {QUOTE}
+        <br>
+        High school student
+      </h2>
+    </div>
+  </div>
+  <div>
+    <Image
+      alt="Hero"
+      src={HeroImg}
+      class="brightness-200 w-full -mt-72 sm:mt-0 scale-100 invert"
+    />
+  </div>
+</section>
+
+<script is:inline>
+  const hero_bg = document.querySelector(".hero-bg-animate");
+
+  setInterval(() => {
+    let binaryText = "";
+    for (let i = 0; i < 1000; i++) {
+      binaryText += Math.floor(Math.random() * 2).toString();
+    }
+    hero_bg.textContent = binaryText;
+  }, 300);
+</script>
