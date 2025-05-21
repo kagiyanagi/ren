@@ -12,7 +12,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const {
   title = SITE_TITLE,
   description = ABOUT_ME,
-  image = "@/image.png",
+  image = "/image.jpg",
 } = Astro.props;
 import { ABOUT_ME, SITE_TITLE } from "@/consts";
 ---
@@ -46,14 +46,14 @@ import { ABOUT_ME, SITE_TITLE } from "@/consts";
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:image" content="https://github.com/quietpulse/aqua/blob/main/src/image.png" /> <!-- head -->
+<meta property="og:image" content={new URL(image, Astro.url)} />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
-<meta property="twitter:image" content="https://github.com/quietpulse/aqua/blob/main/src/image.png" />
+<meta property="twitter:image" content={new URL(image, Astro.url)} />
 
 <!-- View Transitions  -->
 <ClientRouter />
