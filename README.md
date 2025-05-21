@@ -1,119 +1,83 @@
-<h1 align="center">Token</h1>
-<h2 align="center">Minimal Astro + Tailwind CSS Starter</h2>
+<h1 align="center"> Aqua ❄️ </h1>
 
-<p align="center">
-    <img alt="hero" width="450" src="public/image.png" />
-</p>
+<h2 align="center"> A sleek, minimal portfolio website built with Astro & Tailwind CSS </h2>
 
-> [!NOTE]
->
-> `token-template` is a modern and minimalistic Astro + Tailwind CSS starter designed for developers and creators. With a sleek black-and-white terminal-inspired design, it features support for Markdown (MD), MDX, RSS feeds, sitemaps, and fully static content, making it perfect for personal portfolios and blogs.
+<div align="center">
+    [Live Demo] : https://aquakun.vercel.app • [Source Code] : https://github.com/quietpulse/aqua
+</div>
 
-## 🌟 Features
+---
 
-> **token-template** features intro:
+<h2 align="center"> 🚀 Getting Started </h2>
 
-- **Minimalist Design** – Black-and-white terminal-inspired aesthetics with custom fonts.
-- **Astro + Tailwind CSS** – Built using Astro and styled with Tailwind CSS for easy customization.
-- **Content Support** – Write blog posts or documentation in Markdown (MD) and MDX.
-- **Static and Fast** – Fully static content optimized for performance.
-
-## 💻 Installation
-
-> [!TIP]
-> Remember to update [`src/consts.ts`](https://github.com/ArnavK-09/token-template/blob/main/src/consts.ts)
-
-###### terminal
+> Clone, customize, and showcase your work in style.
 
 ```bash
-# Clone the repository
-git clone https://github.com/ArnavK-09/token-template.git my-portfolio
+# 1. Clone this repo
+
+```bash
+git clone https://github.com/quietpulse/aqua.git my-portfolio
 cd my-portfolio
-
-# Install dependencies
-npm install
-
-# Run the development server
-npm run dev
 ```
 
-## 📷 Screenshots
+```bash
+# 2. Install dependencies
+pnpm install
+```
 
-> Here's a working and expected screenshot of **token-template**
+```bash
+# 3. Start development server
+pnpm dev
+```
 
-| Landing Page                              |
-| ----------------------------------------- |
-| ![Demo](/public/screenshot.png) |
-
-| [Lighthouse Results](https://pagespeed.web.dev/analysis/https-token-template-deno-dev/o4lgrcn8pd?form_factor=desktop)                              |
-| ----------------------------------------- |
-| ![results](/public/lighthouse.png) |
-
----
-
-## 💻 Contributing
-
-> [!TIP]  
-> We welcome contributions to improve **token-template**! If you have suggestions, bug fixes, or new feature ideas, follow these steps:
-
-1. **Fork the Repository**  
-   Click the **Fork** button at the top-right of the repo page.
-
-2. **Clone Your Fork**  
-   Clone the repo locally:
-
-   ```bash
-   git clone https://github.com/ArnavK-09/token-template.git
-   ```
-
-3. **Create a Branch**  
-   Create a new branch for your changes:
-
-   ```bash
-   git checkout -b your-feature-branch
-   ```
-
-4. **Make Changes**  
-   Implement your changes (bug fixes, features, etc.).
-
-5. **Commit and Push**  
-   Commit your changes and push the branch:
-
-   ```bash
-   git commit -m "feat(scope): description"
-   git push origin your-feature-branch
-   ```
-
-6. **Open a Pull Request**  
-   Open a PR with a detailed description of your changes.
-
-7. **Collaborate and Merge**  
-   The maintainers will review your PR, request changes if needed, and merge it once approved.
-
-## 🙋‍♂️ Issues
-
-Found a bug or need help? Please create an issue on the [GitHub repository](https://github.com/ArnavK-09/token-template/issues) with a detailed description.
-
-## 👤 Author
-
-<table>
-  <tbody>
-    <tr>
-        <td align="center" valign="top" width="14.28%"><a href="https://github.com/ArnavK-09"><img src="https://github.com/ArnavK-09.png?s=100" width="130px;" alt="Arnav K"/></a><br /><a href="https://github.com/ArnavK-09"<h4><b>Arnav K</b></h3></a></td>
-    </tr>
-  </tbody>
-</table>
+Visit `http://localhost:3000` and start building your digital presence!
 
 ---
 
-<h2 align="center">📄 License</h2>
+<h2 align="center"> 🎨 Design Highlights </h2>
 
-<p align="center">
-<strong>token-template</strong> is licensed under the <code>ISC</code> License. See the <a href="https://github.com/ArnavK-09/token-template/blob/main/LICENSE">LICENSE</a> file for more details.
-</p>
+- **Terminal-inspired theme** with mono fonts and dark mode
+- **Modular components** for fast customization
+- **Responsive layout** that scales from mobile to widescreen
+- **Interactive sections**: hero, projects, about, contact
 
 ---
 
-<p align="center">
-    <strong>🌟 If you find this project helpful, please give it a star on GitHub! 🌟</strong>
-</p>
+<h2 align="center"> 🔧 Tech Stack
+    
+
+| Layer         | Tools               |
+| ------------- | ------------------- |
+| **Framework** | Astro               |
+| **Styling**   | Tailwind CSS        |
+| **Language**  | TypeScript          |
+| **Deployment**| Vercel              |
+
+---
+
+<h2 align="center"> ✨ Features </h2>
+
+- Markdown-powered content (MD & MDX) (WIP)
+- Auto-generated **RSS**, **sitemap**, and **robots.txt**
+- Zero JS by default, opt-in interactive widgets
+- Seamless **dark** mode persistence
+
+---
+
+<h2 align="center"> 🤝 Contributing </h2>
+
+1. Fork the repo
+2. Create a branch: `git checkout -b feature/your-idea`
+3. Commit your changes: `git commit -m "feat: add your feature"`
+4. Push to your branch: `git push origin feature/your-idea`
+5. Open a Pull Request and discuss!
+
+---
+
+<h2 align="center"> 📄 License </h2>
+
+Distributed under the **ISC License**. See [LICENSE](LICENSE) for details.
+
+---
+
+> Crafted with 💧 & 🎨 by **quietpulse**. Let's make waves together!
