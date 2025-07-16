@@ -1,9 +1,9 @@
-<h1 align="center"> Aqua ❄️ </h1>
+<h1 align="center"> Ren Kagiyanagi </h1>
 
 <h2 align="center"> A sleek, minimal portfolio website built with Astro & Tailwind CSS </h2>
 
 <div align="center">
-    [Live Demo] : https://aquakun.vercel.app • [Source Code] : https://github.com/quietpulse/aqua
+    [Live Demo] : https://kagiyanagi.vercel.app • [Source Code] : https://github.com/kagiyanagi/ren
 </div>
 
 ---
@@ -16,7 +16,7 @@
 # 1. Clone this repo
 
 ```bash
-git clone https://github.com/quietpulse/aqua.git my-portfolio
+git clone https://github.com/kagiyanagi/ren.git my-portfolio
 cd my-portfolio
 ```
 
@@ -80,5 +80,5 @@ Distributed under the **ISC License**. See [LICENSE](LICENSE) for details.
 
 ---
 
-> Crafted with 💧 & 🎨 by **quietpulse**. Let's make waves together!
+> Crafted with 💧 & 🎨 by **Kagiyanagi**. Let's make waves together!
 
