@@ -3,7 +3,7 @@
 <h2 align="center"> A sleek, minimal portfolio website built with Astro & Tailwind CSS </h2>
 
 <div align="center">
-    [Live Demo] : https://isaacaman.vercel.app • [Source Code] : https://github.com/isaacaman/ren
+    [Live Demo] : https://kagiyanagi.vercel.app • [Source Code] : https://github.com/kagiyanagi/ren
 </div>
 
 ---
@@ -16,7 +16,7 @@
 # 1. Clone this repo
 
 ```bash
-git clone https://github.com/isaacaman/ren.git my-portfolio
+git clone https://github.com/kagiyanagi/ren.git my-portfolio
 cd my-portfolio
 ```
 
@@ -80,5 +80,5 @@ Distributed under the **ISC License**. See [LICENSE](LICENSE) for details.
 
 ---
 
-> Crafted with 💧 & 🎨 by **isaacaman**. Let's make waves together!
+> Crafted with 💧 & 🎨 by **kagiyanagi**. Let's make waves together!
 
