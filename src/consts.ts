@@ -8,7 +8,7 @@ export const KNOWN_TECH =
   );
 export const ABOUT_ME =
   `I'm a self-taught engineer and passionate technology enthusiast from India, currently a high school student. My interests span a wide range of fields including web development, Android development, graphic design, low-level programming, IoT, ML and more. I'm also a fan of anime and music, which inspire my creativity. While I'm still early in my journey, I'm highly motivated and committed to continuous learning and growth in the tech world.`.trim();
-export const GITHUB_USERNAME = "isaacaman";
+export const GITHUB_USERNAME = "kagiyanagi";
 export const QUOTE = "Engineer, GFX designer";
 export const NAV_LINKS: Array<{ title: string; href?: string }> = [
   {
