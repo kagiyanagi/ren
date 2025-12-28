@@ -20,7 +20,7 @@ export const NAV_LINKS: Array<{ title: string; href?: string }> = [
     href: "//github.com/" + GITHUB_USERNAME,
   },
   {
-    title: "Pinterest",
-    href: "//pinterest.com/isaacaman/"
+    title: "YouTube",
+    href: "//youtube.com/@kagiyanagi"
   },
 ];
