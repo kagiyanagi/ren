@@ -35,6 +35,7 @@
           required
           class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors"
         />
+          <span id="err-name" class="text-red-400 text-sm mt-1"></span>
       </div>
 
       <div class="flex flex-col gap-2">
@@ -47,6 +48,7 @@
           required
           class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors"
         />
+          <span id="err-email" class="text-red-400 text-sm mt-1"></span>
       </div>
 
       <div class="flex flex-col gap-2">
@@ -59,10 +61,12 @@
           required
           class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors resize-none"
         ></textarea>
+          <span id="err-message" class="text-red-400 text-sm mt-1"></span>
       </div>
 
       <button
         type="submit"
+        id="send-btn"
         class="bg-white/10 text-white font-medium py-2 px-4 rounded hover:bg-white/20 transition-all ease-in-out"
       >
         Send Message
@@ -123,53 +127,120 @@
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const form = document.querySelector("form");
-        if (form) {
-          form.addEventListener("submit", async (e) => {
-            e.preventDefault();
+        const nameEl = document.getElementById("name");
+        const emailEl = document.getElementById("email");
+        const msgEl = document.getElementById("message");
+        const errName = document.getElementById("err-name");
+        const errEmail = document.getElementById("err-email");
+        const errMsg = document.getElementById("err-message");
+        const sendBtn = document.getElementById("send-btn");
 
-            const name = document.getElementById("name")?.value || "";
-            const email = document.getElementById("email")?.value || "";
-            const message = document.getElementById("message")?.value || "";
-
-            const telegramMessage = `📬 New Message from Contact Form\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
-
-            try {
-              const bodyToSend = { name, email, message };
-              console.log('[contact] Sending', bodyToSend);
-
-              const resp = await fetch('/api/send-message', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify(bodyToSend),
-              });
-
-              const text = await resp.text().catch(() => '');
-              let json;
-              try {
-                json = text ? JSON.parse(text) : null;
-              } catch (e) {
-                json = { parseError: String(e), raw: text };
-              }
-
-              console.log('[contact] Response', { status: resp.status, ok: resp.ok, body: json });
-
-              if (!resp.ok) {
-                console.error('Send error', json);
-                const msg = 'Failed to send message. Please try again.';
-                if (window.showNotification) window.showNotification(msg, 'error'); else alert(msg);
-                return;
-              }
-
-              const okMsg = 'Message sent successfully!';
-              if (window.showNotification) window.showNotification(okMsg, 'success'); else alert(okMsg);
-              form.reset();
-            } catch (error) {
-              console.error('Error sending message:', error);
-              const errMsg = 'Failed to send message. Please try again.';
-              if (window.showNotification) window.showNotification(errMsg, 'error'); else alert(errMsg);
-            }
-          });
+        function clearError(el, errEl) {
+          if (!el) return;
+          el.classList.remove("ring-2", "ring-red-400");
+          if (errEl) errEl.textContent = "";
         }
+
+        function setError(el, errEl, msg) {
+          if (!el) return;
+          el.classList.add("ring-2", "ring-red-400");
+          if (errEl) errEl.textContent = msg;
+        }
+
+        function validate() {
+          let ok = true;
+          clearError(nameEl, errName);
+          clearError(emailEl, errEmail);
+          clearError(msgEl, errMsg);
+
+          const name = nameEl?.value?.trim() || "";
+          const email = emailEl?.value?.trim() || "";
+          const message = msgEl?.value?.trim() || "";
+
+          if (!name) {
+            setError(nameEl, errName, "Please enter your name.");
+            ok = false;
+          }
+
+          if (!email) {
+            setError(emailEl, errEmail, "Please enter your email.");
+            ok = false;
+          } else {
+            const re = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+            if (!re.test(email)) {
+              setError(emailEl, errEmail, "Please enter a valid email.");
+              ok = false;
+            }
+          }
+
+          if (!message) {
+            setError(msgEl, errMsg, "Please enter a message.");
+            ok = false;
+          }
+
+          return ok;
+        }
+
+        [nameEl, emailEl, msgEl].forEach((el) => {
+          if (!el) return;
+          el.addEventListener("input", () => {
+            if (el.id === "name") clearError(nameEl, errName);
+            if (el.id === "email") clearError(emailEl, errEmail);
+            if (el.id === "message") clearError(msgEl, errMsg);
+          });
+        });
+
+        if (!form) return;
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          if (!validate()) {
+            const firstErr = document.querySelector(".ring-red-400");
+            if (firstErr && typeof firstErr.focus === "function") firstErr.focus();
+            return;
+          }
+
+          const name = nameEl?.value || "";
+          const email = emailEl?.value || "";
+          const message = msgEl?.value || "";
+
+          try {
+            sendBtn?.setAttribute("disabled", "true");
+            const bodyToSend = { name, email, message };
+
+            const resp = await fetch('/api/send-message', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: JSON.stringify(bodyToSend),
+            });
+
+            const text = await resp.text().catch(() => '');
+            let json;
+            try {
+              json = text ? JSON.parse(text) : null;
+            } catch (err) {
+              json = { parseError: String(err), raw: text };
+            }
+
+            if (!resp.ok) {
+              const msg = 'Failed to send message. Please try again.';
+              if (window.showNotification) window.showNotification(msg, 'error'); else alert(msg);
+              sendBtn?.removeAttribute('disabled');
+              return;
+            }
+
+            const okMsg = 'Message sent successfully!';
+            if (window.showNotification) window.showNotification(okMsg, 'success'); else alert(okMsg);
+            form.reset();
+          } catch (error) {
+            console.error('Error sending message:', error);
+            const errMsgStr = 'Failed to send message. Please try again.';
+            if (window.showNotification) window.showNotification(errMsgStr, 'error'); else alert(errMsgStr);
+          } finally {
+            sendBtn?.removeAttribute('disabled');
+          }
+        });
       });
     </script>
   </div>
