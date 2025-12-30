@@ -25,3 +25,5 @@ pnpm-debug.log*
 .idea/
 package-lock.json
 
+.vercel
+.env*.local
