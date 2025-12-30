@@ -2,7 +2,7 @@
 import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
-import path from 'path';
+import path from "path";
 import tailwind from "@astrojs/tailwind";
 
 // https://astro.build/config
@@ -15,12 +15,11 @@ export default defineConfig({
       theme: "github-dark-high-contrast",
     },
   },
-    vite: {
+  vite: {
     resolve: {
       alias: {
-        '@': path.resolve('./src'),
+        "@": path.resolve("./src"),
       },
     },
   },
 });
-
