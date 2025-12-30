@@ -22,14 +22,6 @@
 		{
 			"src": "^/api/send-message/?$",
 			"dest": "_render"
-		},
-		{
-			"src": "^/rss\\.xml/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/$",
-			"dest": "_render"
 		}
 	]
 }

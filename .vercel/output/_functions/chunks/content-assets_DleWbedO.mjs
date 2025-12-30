@@ -1,3 +1,1 @@
-const contentAssets = new Map();
-
-export { contentAssets as default };
+// Contents removed by Astro as it's used for prerendering only
