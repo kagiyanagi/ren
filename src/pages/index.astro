@@ -34,7 +34,7 @@ try {
 
 <Layout title="Aman - Engineer, GFX designer and High school student">
   <Hero />
-  <Section title="About Me">
+  <Section title="About me">
     <div
       class="w-full grid place-items-center gap-4 grid-cols-1 sm:grid-cols-2 min-h-[calc(160vh)] md:min-h-[calc(70vh)] sm:min-h-[calc(70vh)]"
     >
@@ -80,7 +80,7 @@ try {
         </p>
         <p
           id="lastUpdated"
-          class="text-zinc-600 text-xl cursor-help"
+          class="text-zinc-600 text-xl custom-cursor-help"
           title="This data is coming from my GitHub repository's latest commit."
           data-commit={commitISO}
         >
@@ -122,7 +122,7 @@ try {
       </div>
     </div>
   </Section>
-  <Section title="Technologies i ♥︎" full_screen={false}>
+  <Section title="Technologies i like" full_screen={false}>
     <div class="w-full grid place-items-center mb-12">
       <div class="w-full gap-4 flex flex-wrap max-w-2xl text-lg justify-center">
         {KNOWN_TECH.map((x) => <Breadcrumb title={x} />)}
@@ -141,7 +141,7 @@ try {
     </div>
   </Section>
   <Section
-    title="Contact"
+    title="Contact me"
     className={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center mb-12"}
   >
     <div class="w-full grid place-items-center">
