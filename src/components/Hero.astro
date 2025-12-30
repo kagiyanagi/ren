@@ -27,15 +27,41 @@ import { SITE_TITLE } from "@/consts";
 </section>
 
 <script is:inline>
-  // Your existing binary background animation
-  const hero_bg = document.querySelector(".hero-bg-animate");
-  setInterval(() => {
+  const heroBg = document.querySelector(".hero-bg-animate");
+
+  function generateBinary() {
+    if (!heroBg) return;
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // Adjust these based on your font (monospace avg char width ~0.6em, line height 1)
+    const fontSizePx = parseFloat(getComputedStyle(heroBg).fontSize);  // Gets current CSS font-size in px
+    const charWidth = fontSizePx * 0.6;  // Approx for monospace '0' or '1'
+    const lineHeight = fontSizePx * 1.0;  // Matches CSS line-height: 1
+
+    const charsPerLine = Math.ceil(width / charWidth) + 10;  // Extra for safety/margins
+    const linesNeeded = Math.ceil(height / lineHeight) + 5;  // Extra for overflow/scroll
+
+    let totalChars = charsPerLine * linesNeeded;
+    totalChars = Math.min(totalChars, 50000);  // Cap for perf (adjust if needed)
+
     let binaryText = "";
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < totalChars; i++) {
       binaryText += Math.floor(Math.random() * 2).toString();
     }
-    hero_bg.textContent = binaryText;
-  }, 300);
+
+    heroBg.textContent = binaryText;
+  }
+
+  // Initial generation
+  generateBinary();
+
+  // Animate every 300ms
+  setInterval(generateBinary, 300);
+
+  // Regenerate on resize
+  window.addEventListener('resize', generateBinary);
 </script>
 
 <style>

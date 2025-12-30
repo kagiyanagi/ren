@@ -54,15 +54,18 @@ img {
 }
 
 .hero-bg {
+  font-style: RetroByte;
   width: 100%;
-  height: 100%;
+  height: 110%;
   word-wrap: break-word;
   white-space: pre-wrap;
-  line-height: 1;
+  line-height: 1.1;
   opacity: 0.03;
-  font-size: 3.25rem;
+  font-size: 2.5rem;  /* Smaller for density; was 3.25rem—adjust to 0.75rem for more */
   pointer-events: none;
   user-select: none;
+  overflow: hidden;  /* Prevent scrollbars if text overflows */
+  letter-spacing: 0.07rem;  /* Optional: Tighten spacing for more density */
 }
 
 /* Notification bar styles */
