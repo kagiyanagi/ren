@@ -1,6 +1,6 @@
 ---
 // Contact component for Telegram messaging
-import Notification from './Notification.astro';
+ 
 ---
 
 <div
@@ -69,7 +69,56 @@ import Notification from './Notification.astro';
       </button>
     </form>
 
-    <Notification client:load />
+    <div id="__notification_root" aria-live="polite" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none"></div>
+
+    <script type="module">
+      (function () {
+        const root = document.getElementById('__notification_root');
+        if (!root) return;
+
+        function makeNode(message, type) {
+          const el = document.createElement('div');
+          el.className = 'notify-item pointer-events-auto max-w-xl w-full mx-auto rounded-md px-4 py-2 mb-2 text-sm shadow-lg flex items-center gap-3 justify-between';
+          el.setAttribute('role', 'status');
+
+          const bg = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
+          el.classList.add(...bg.split(' '));
+
+          const txt = document.createElement('div');
+          txt.textContent = message;
+          txt.className = 'text-white';
+
+          const close = document.createElement('button');
+          close.className = 'text-white/80 hover:text-white ml-4';
+          close.innerHTML = '✕';
+          close.addEventListener('click', () => {
+            hide(el);
+          });
+
+          el.appendChild(txt);
+          el.appendChild(close);
+
+          return el;
+        }
+
+        function hide(node) {
+          if (!node) return;
+          node.classList.add('notify-hide');
+          setTimeout(() => node.remove(), 300);
+        }
+
+        window.showNotification = function (message, type = 'info', ttl = 4000) {
+          try {
+            const node = makeNode(message, type);
+            root.appendChild(node);
+            // Auto-hide
+            setTimeout(() => hide(node), ttl);
+          } catch (e) {
+            console.warn('showNotification error', e);
+          }
+        };
+      })();
+    </script>
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
