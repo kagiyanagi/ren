@@ -12,13 +12,13 @@
 
 > Clone, customize, and showcase your work in style.
 
-```bash
+````bash
 # 1. Clone this repo
 
 ```bash
 git clone https://github.com/kagiyanagi/ren.git my-portfolio
 cd my-portfolio
-```
+````
 
 ```bash
 # 2. Install dependencies
@@ -44,14 +44,14 @@ Visit `http://localhost:3000` and start building your digital presence!
 ---
 
 <h2 align="center"> 🔧 Tech Stack
-    
 
-| Layer         | Tools               |
-| ------------- | ------------------- |
-| **Framework** | Astro               |
-| **Styling**   | Tailwind CSS        |
-| **Language**  | TypeScript          |
-| **Deployment**| Vercel              |
+
+| Layer          | Tools        |
+| -------------- | ------------ |
+| **Framework**  | Astro        |
+| **Styling**    | Tailwind CSS |
+| **Language**   | TypeScript   |
+| **Deployment** | Vercel       |
 
 ---
 
@@ -81,4 +81,3 @@ Distributed under the **ISC License**. See [LICENSE](LICENSE) for details.
 ---
 
 > Crafted with 💧 & 🎨 by **kagiyanagi**. Let's make waves together!
-

@@ -1,36 +1,36 @@
 ---
 import { Image } from "astro:assets";
 import HeroImg from "@/hero.png";
-import { QUOTE, SITE_TITLE } from "@/consts";
+import { SITE_TITLE } from "@/consts";
 ---
 
-<div class="hero-bg hidden md:block h-screen hero-bg-animate absolute top-0"></div>
+<div class="hero-bg hidden md:block h-screen hero-bg-animate absolute top-0">
+</div>
+
 <section
-  class="h-screen !z-[20] relative w-full grid grid-cols-1 grid-rows-0 sm:grid-cols-2 md:grid-cols-2 gap-0 items-center"
+  class="h-screen relative w-full grid grid-cols-1 grid-rows-0 md:grid-cols-2 gap-0 items-center"
   id="hero"
 >
   <div class="grid place-items-center">
-    <div class="text-center -mt-36">
+    <div class="text-center">
       <h1 class="font-bold text-5xl sm:text-8xl">{`<${SITE_TITLE} />`}</h1>
-      <h2 class="text-xl sm:text-4xl opacity-95">
-        {QUOTE}
-        <br>
-        and a Student
+      <h2 class="text-xl sm:text-4xl opacity-95 inline">
+        Engineer, GFX designer
+        <br />
+        and a Student.
+        <span class="blinking-cursor">_</span>
       </h2>
     </div>
   </div>
+
   <div>
-    <Image
-      alt="Hero"
-      src={HeroImg}
-      class="brightness-200 w-full -mt-72 sm:mt-0 scale-100 invert"
-    />
+    <Image alt="Hero" src={HeroImg} class="brightness-200 scale-100 invert" />
   </div>
 </section>
 
 <script is:inline>
+  // Your existing binary background animation
   const hero_bg = document.querySelector(".hero-bg-animate");
-
   setInterval(() => {
     let binaryText = "";
     for (let i = 0; i < 1000; i++) {
@@ -39,3 +39,23 @@ import { QUOTE, SITE_TITLE } from "@/consts";
     hero_bg.textContent = binaryText;
   }, 300);
 </script>
+
+<style>
+  .blinking-cursor {
+    display: inline-block;
+    color: white;
+    font-weight: bold;
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+</style>
