@@ -13,6 +13,18 @@
 .font-pixel {
   font-family: "RetroByte", monospace !important;
 }
+.custom-cursor-help{
+    cursor: url("/public/cursors/tile_0180.png"), help;  /* Custom help cursor */
+}
+html, body {
+    cursor: url("/public/cursors/tile_0026.png"), default;  /* Default arrow-like cursor for the page */
+}
+input, textarea, h1, h2, h3, [contenteditable], p, span {  /* Target text-selectable elements */
+    cursor: url("/public/cursors/tile_0141.png"), text;  /* Custom I-beam for text areas */
+}
+button, a, label {  /* Target clickable elements */
+    cursor: url("/public/cursors/tile_0137.png"), pointer;  /* Custom pointer for clickable elements */
+}
 body {
   font-family: "VCR", monospace !important;
 }
