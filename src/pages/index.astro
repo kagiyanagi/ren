@@ -21,19 +21,21 @@ const projects = (await getCollection("blog")).sort(
   <Hero />
   <Section title="About Me" class="relative w-full">
     <div
-      class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center "
+      class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center min-h-[calc(70vh)]"
     >
       {/* Left column: Hero image */}
       <div class="w-full flex justify-center">
         <Image
           alt="Hero"
           src={VillainImg}
-          class="brightness-200 invalid max-w-xs sm:max-w-sm md:max-w-md w-full h-auto object-contain invert"
+          class="brightness-200 invalid max-w-xs sm:max-w-sm md:max-w-md object-contain invert"
         />
       </div>
 
       {/* Right column: Text content */}
-      <div class="w-full flex flex-col justify-center text-lg sm:text-xl gap-4 max-w-screen-lg">
+      <div
+        class="w-full flex flex-col justify-center text-lg sm:text-xl gap-4 max-w-screen-lg"
+      >
         <h3
           class="text-2xl sm:text-4xl opacity-95 mb-4 flex items-center gap-4"
         >
@@ -61,10 +63,39 @@ const projects = (await getCollection("blog")).sort(
           I'm still highly motivated and committed to continuous learning and
           growth in the tech world.
         </p>
+        <p id="lastUpdated" class="text-zinc-600">Last updated: loading…</p>
+
+        <script>
+          const commitISO = "2025-12-30T04:27:20Z"; // from GitHub API
+          const commitTime = new Date(commitISO).getTime();
+
+          function updateSince() {
+            const now = Date.now();
+            let diff = now - commitTime;
+
+            const ms = diff % 1000;
+            diff = Math.floor(diff / 1000);
+
+            const s = diff % 60;
+            diff = Math.floor(diff / 60);
+
+            const m = diff % 60;
+            diff = Math.floor(diff / 60);
+
+            const h = diff % 24;
+            const d = Math.floor(diff / 24);
+
+            document.getElementById("lastUpdated").textContent =
+              `Last updated: ${d}d ${h}h ${m}m ${s}s ${ms}ms ago`;
+          }
+
+          // ultra-smooth update
+          setInterval(updateSince, 16);
+        </script>
       </div>
     </div>
   </Section>
-  <Section title="Technologies I Know" full_screen={false}>
+  <Section title="Technologies i know" full_screen={false}>
     <div class="w-full grid place-items-center mb-12">
       <div
         class="w-full gap-4 flex flex-wrap px-3 max-w-xl text-lg justify-center"
