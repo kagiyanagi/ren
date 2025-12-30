@@ -4,6 +4,15 @@
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: "RetroByte";
+  src: url("/fonts/RetroByte.ttf") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+.font-pixel {
+  font-family: "RetroByte", monospace !important;
+}
 body {
   font-family: "VCR", monospace !important;
 }
