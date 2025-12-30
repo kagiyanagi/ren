@@ -11,7 +11,21 @@ import Contact from "@/components/Contact.astro";
 import { Image } from "astro:assets";
 import VillainImg from "@/villain.png";
 import { KNOWN_TECH } from "@/consts";
+const GITHUB_REPO = "kagiyanagi/ren";
+let commitISO = null;
+try {
+  const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/commits?per_page=1`);
+  if (res.ok) {
+    const json = await res.json();
+    commitISO = json?.[0]?.commit?.committer?.date ?? json?.[0]?.commit?.author?.date ?? null;
+  } else {
+    console.error("GitHub API responded with status", res.status);
+  }
+} catch (err) {
+  console.error("Failed fetching latest commit:", err);
+}
 ---
+
 
 <Layout title="Aman - Engineer, GFX designer and High school student">
   <Hero />
@@ -59,13 +73,19 @@ import { KNOWN_TECH } from "@/consts";
           I'm still highly motivated and committed to continuous learning and
           growth in the tech world.
         </p>
-        <p id="lastUpdated" class="text-zinc-600 text-xl">Last updated: loading…</p>
+        <p id="lastUpdated" class="text-zinc-600 text-xl" data-commit={commitISO}>Last updated: loading…</p>
 
         <script>
-          const commitISO = "2025-12-30T04:27:20Z"; // from GitHub API
-          const commitTime = new Date(commitISO).getTime();
+          const el = document.getElementById("lastUpdated");
+          const commitISO = el?.dataset?.commit || null;
+          const commitTime = commitISO ? new Date(commitISO).getTime() : null;
 
           function updateSince() {
+            if (!commitTime) {
+              el.textContent = "Last updated: unknown";
+              return;
+            }
+
             const now = Date.now();
             let diff = now - commitTime;
 
@@ -81,11 +101,10 @@ import { KNOWN_TECH } from "@/consts";
             const h = diff % 24;
             const d = Math.floor(diff / 24);
 
-            document.getElementById("lastUpdated").textContent =
-              `Last updated: ${d}d ${h}h ${m}m ${s}s ${ms}ms ago`;
+            el.textContent = `Last updated: ${d}d ${h}h ${m}m ${s}s ${ms}ms ago`;
           }
 
-          // ultra-smooth update
+          updateSince();
           setInterval(updateSince, 16);
         </script>
       </div>

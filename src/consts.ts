@@ -13,7 +13,7 @@ export const QUOTE = "Engineer, GFX designer";
 export const NAV_LINKS: Array<{ title: string; href?: string }> = [
   {
     title: "Telegram",
-    href: "//t.me/kagiyanagi",
+    href: "//t.me/rensakashvani",
   },
   {
     title: "Github",
