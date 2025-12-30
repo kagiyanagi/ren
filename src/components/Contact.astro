@@ -1,0 +1,121 @@
+---
+// Contact component for Telegram messaging
+---
+
+<div
+  class="w-full mx-auto bg-gradient-to-br relative pb-5 from-white/[0.001] to-white/[0.01] rounded-lg overflow-hidden"
+>
+  <div class="flex items-center justify-start px-4 py-2 bg-white/95">
+    <div class="flex space-x-2">
+      <div class="w-3 h-3 rounded-full bg-black"></div>
+      <div class="w-3 h-3 rounded-full bg-black"></div>
+      <div class="w-3 h-3 rounded-full bg-black"></div>
+    </div>
+  </div>
+
+  <div class="p-6 tracking-wider">
+    <h2 class="text-xl font-medium text-white mb-4">
+      <span class="text-white/70 mr-2">❯</span>
+      Get in touch
+    </h2>
+    <p class="text-white/80 text-sm font-thin mb-6">
+      Have a question or want to collaborate? Send me a message on Telegram!
+    </p>
+
+    <form class="flex flex-col gap-4" novalidate>
+
+      <div class="flex flex-col gap-2">
+        <label for="name" class="text-white/70 text-sm">Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Your name"
+          required
+          class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors"
+        />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="email" class="text-white/70 text-sm">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="your@email.com"
+          required
+          class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors"
+        />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="message" class="text-white/70 text-sm">Message</label>
+        <textarea
+          id="message"
+          name="message"
+          placeholder="Your message..."
+          rows="5"
+          required
+          class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors resize-none"
+        ></textarea>
+      </div>
+
+      <button
+        type="submit"
+        class="bg-white/10 text-white font-medium py-2 px-4 rounded hover:bg-white/20 transition-all ease-in-out"
+      >
+        Send Message
+      </button>
+    </form>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.querySelector("form");
+        if (form) {
+          form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById("name")?.value || "";
+            const email = document.getElementById("email")?.value || "";
+            const message = document.getElementById("message")?.value || "";
+
+            const telegramMessage = `📬 New Message from Contact Form\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
+
+            try {
+              const bodyToSend = { name, email, message };
+              console.log('[contact] Sending', bodyToSend);
+
+              const resp = await fetch('/api/send-message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(bodyToSend),
+              });
+
+              const text = await resp.text().catch(() => '');
+              let json;
+              try {
+                json = text ? JSON.parse(text) : null;
+              } catch (e) {
+                json = { parseError: String(e), raw: text };
+              }
+
+              console.log('[contact] Response', { status: resp.status, ok: resp.ok, body: json });
+
+              if (!resp.ok) {
+                console.error('Send error', json);
+                alert('Failed to send message. Please try again.');
+                return;
+              }
+
+              alert('Message sent successfully!');
+              form.reset();
+            } catch (error) {
+              console.error('Error sending message:', error);
+              alert('Failed to send message. Please try again.');
+            }
+          });
+        }
+      });
+    </script>
+  </div>
+</div>

@@ -5,11 +5,13 @@ type Props = {
   className?: string;
 };
 const { title = "Section", full_screen = false, className = "" } = Astro.props;
+const passedClass = (Astro.props as any).class ?? className ?? "";
 ---
 
 <section
   id={title.toLowerCase().replaceAll(" ", "")}
-  class={`${full_screen ? "h-screen" : ""} px-4 py-10 w-screen !overflow-x-hidden ${className}`}
+  class={`${full_screen ? "h-screen" : ""} px-4 py-10 w-screen !overflow-x-hidden ${className} ${passedClass}`}
+  {...Astro.props}
 >
   <div class="w-full grid place-items-center">
     <h2 class="text-4xl md:text-6xl text-center">{`<${title} />`}</h2>
