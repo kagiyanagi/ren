@@ -43,3 +43,20 @@ img {
   pointer-events: none;
   user-select: none;
 }
+
+/* Notification bar styles */
+#__notification_root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.notify-item {
+  transition: transform 0.28s ease, opacity 0.28s ease;
+  transform-origin: center bottom;
+  opacity: 1;
+}
+.notify-hide {
+  transform: translateY(8px) scale(0.98);
+  opacity: 0;
+}
+

@@ -1,5 +1,6 @@
 ---
 // Contact component for Telegram messaging
+import Notification from './Notification.astro';
 ---
 
 <div
@@ -68,6 +69,8 @@
       </button>
     </form>
 
+    <Notification client:load />
+
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const form = document.querySelector("form");
@@ -103,15 +106,18 @@
 
               if (!resp.ok) {
                 console.error('Send error', json);
-                alert('Failed to send message. Please try again.');
+                const msg = 'Failed to send message. Please try again.';
+                if (window.showNotification) window.showNotification(msg, 'error'); else alert(msg);
                 return;
               }
 
-              alert('Message sent successfully!');
+              const okMsg = 'Message sent successfully!';
+              if (window.showNotification) window.showNotification(okMsg, 'success'); else alert(okMsg);
               form.reset();
             } catch (error) {
               console.error('Error sending message:', error);
-              alert('Failed to send message. Please try again.');
+              const errMsg = 'Failed to send message. Please try again.';
+              if (window.showNotification) window.showNotification(errMsg, 'error'); else alert(errMsg);
             }
           });
         }
