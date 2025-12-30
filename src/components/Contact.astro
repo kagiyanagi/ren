@@ -1,6 +1,5 @@
 ---
 // Contact component for Telegram messaging
- 
 ---
 
 <div
@@ -24,46 +23,51 @@
     </p>
 
     <form class="flex flex-col gap-4" novalidate>
-
       <div class="flex flex-col gap-2">
         <label for="name" class="text-white/70 text-sm">Name</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          placeholder="Your name"
-          required
-          class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors"
-        />
-          <span id="err-name" class="text-red-400 text-sm mt-1"></span>
+        <div class="relative">
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Your name"
+            required
+            class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors custom-underscore-caret w-full"
+          />
+          <span id="fake-caret-name" class="fake-caret hidden">_</span>
+        </div>
+        <span id="err-name" class="text-red-400 text-sm mt-1"></span>
       </div>
-
       <div class="flex flex-col gap-2">
         <label for="email" class="text-white/70 text-sm">Email</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="your@email.com"
-          required
-          class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors"
-        />
-          <span id="err-email" class="text-red-400 text-sm mt-1"></span>
+        <div class="relative">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="your@email.com"
+            required
+            class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors custom-underscore-caret w-full"
+          />
+          <span id="fake-caret-email" class="fake-caret hidden">_</span>
+        </div>
+        <span id="err-email" class="text-red-400 text-sm mt-1"></span>
       </div>
-
       <div class="flex flex-col gap-2">
         <label for="message" class="text-white/70 text-sm">Message</label>
-        <textarea
-          id="message"
-          name="message"
-          placeholder="Your message..."
-          rows="5"
-          required
-          class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors resize-none"
-        ></textarea>
-          <span id="err-message" class="text-red-400 text-sm mt-1"></span>
+        <div class="relative">
+          <textarea
+            id="message"
+            name="message"
+            placeholder="Your message..."
+            rows="5"
+            required
+            class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors resize-none custom-underscore-caret w-full"
+          ></textarea>
+          <span id="fake-caret-message" class="fake-caret hidden">_</span>
+        </div>
+        <span id="err-message" class="text-red-400 text-sm mt-1"></span>
       </div>
-
       <button
         type="submit"
         id="send-btn"
@@ -73,29 +77,35 @@
       </button>
     </form>
 
-    <div id="__notification_root" aria-live="polite" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none"></div>
+    <div
+      id="__notification_root"
+      aria-live="polite"
+      class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none"
+    >
+    </div>
 
     <script type="module">
       (function () {
-        const root = document.getElementById('__notification_root');
+        const root = document.getElementById("__notification_root");
         if (!root) return;
 
         function makeNode(message, type) {
-          const el = document.createElement('div');
-          el.className = 'notify-item pointer-events-auto max-w-xl w-full mx-auto rounded-md px-4 py-2 mb-2 text-sm shadow-lg flex items-center gap-3 justify-between';
-          el.setAttribute('role', 'status');
+          const el = document.createElement("div");
+          el.className =
+            "notify-item pointer-events-auto max-w-xl w-full mx-auto rounded-md px-4 py-2 mb-2 text-sm shadow-lg flex items-center gap-3 justify-between";
+          el.setAttribute("role", "status");
 
-          const bg = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
-          el.classList.add(...bg.split(' '));
+          const bg = type === "success" ? "bg-emerald-600" : "bg-rose-600";
+          el.classList.add(...bg.split(" "));
 
-          const txt = document.createElement('div');
+          const txt = document.createElement("div");
           txt.textContent = message;
-          txt.className = 'text-white';
+          txt.className = "text-white";
 
-          const close = document.createElement('button');
-          close.className = 'text-white/80 hover:text-white ml-4';
-          close.innerHTML = '✕';
-          close.addEventListener('click', () => {
+          const close = document.createElement("button");
+          close.className = "text-white/80 hover:text-white ml-4";
+          close.innerHTML = "✕";
+          close.addEventListener("click", () => {
             hide(el);
           });
 
@@ -107,18 +117,22 @@
 
         function hide(node) {
           if (!node) return;
-          node.classList.add('notify-hide');
+          node.classList.add("notify-hide");
           setTimeout(() => node.remove(), 300);
         }
 
-        window.showNotification = function (message, type = 'info', ttl = 4000) {
+        window.showNotification = function (
+          message,
+          type = "info",
+          ttl = 4000,
+        ) {
           try {
             const node = makeNode(message, type);
             root.appendChild(node);
             // Auto-hide
             setTimeout(() => hide(node), ttl);
           } catch (e) {
-            console.warn('showNotification error', e);
+            console.warn("showNotification error", e);
           }
         };
       })();
@@ -197,7 +211,8 @@
 
           if (!validate()) {
             const firstErr = document.querySelector(".ring-red-400");
-            if (firstErr && typeof firstErr.focus === "function") firstErr.focus();
+            if (firstErr && typeof firstErr.focus === "function")
+              firstErr.focus();
             return;
           }
 
@@ -209,13 +224,16 @@
             sendBtn?.setAttribute("disabled", "true");
             const bodyToSend = { name, email, message };
 
-            const resp = await fetch('/api/send-message', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            const resp = await fetch("/api/send-message", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
               body: JSON.stringify(bodyToSend),
             });
 
-            const text = await resp.text().catch(() => '');
+            const text = await resp.text().catch(() => "");
             let json;
             try {
               json = text ? JSON.parse(text) : null;
@@ -224,22 +242,144 @@
             }
 
             if (!resp.ok) {
-              const msg = 'Failed to send message. Please try again.';
-              if (window.showNotification) window.showNotification(msg, 'error'); else alert(msg);
-              sendBtn?.removeAttribute('disabled');
+              const msg = "Failed to send message. Please try again.";
+              if (window.showNotification)
+                window.showNotification(msg, "error");
+              else alert(msg);
+              sendBtn?.removeAttribute("disabled");
               return;
             }
 
-            const okMsg = 'Message sent successfully!';
-            if (window.showNotification) window.showNotification(okMsg, 'success'); else alert(okMsg);
+            const okMsg = "Message sent successfully!";
+            if (window.showNotification)
+              window.showNotification(okMsg, "success");
+            else alert(okMsg);
             form.reset();
           } catch (error) {
-            console.error('Error sending message:', error);
-            const errMsgStr = 'Failed to send message. Please try again.';
-            if (window.showNotification) window.showNotification(errMsgStr, 'error'); else alert(errMsgStr);
+            console.error("Error sending message:", error);
+            const errMsgStr = "Failed to send message. Please try again.";
+            if (window.showNotification)
+              window.showNotification(errMsgStr, "error");
+            else alert(errMsgStr);
           } finally {
-            sendBtn?.removeAttribute('disabled');
+            sendBtn?.removeAttribute("disabled");
           }
+        });
+      });
+    </script>
+    <script>
+      // Function to get caret coordinates (adapted from textarea-caret-position technique)
+      function getCaretCoordinates(element) {
+        const position = element.selectionStart;
+        const div = document.createElement("div");
+        const span = document.createElement("span");
+        const style = getComputedStyle(element);
+        const props = [
+          "direction",
+          "boxSizing",
+          "width",
+          "height",
+          "overflowX",
+          "overflowY",
+          "borderTopWidth",
+          "borderRightWidth",
+          "borderBottomWidth",
+          "borderLeftWidth",
+          "paddingTop",
+          "paddingRight",
+          "paddingBottom",
+          "paddingLeft",
+          "fontStyle",
+          "fontVariant",
+          "fontWeight",
+          "fontStretch",
+          "fontSize",
+          "fontSizeAdjust",
+          "lineHeight",
+          "fontFamily",
+          "textAlign",
+          "textTransform",
+          "textIndent",
+          "textDecoration",
+          "letterSpacing",
+          "wordSpacing",
+        ];
+
+        // Mirror styles
+        div.style.position = "absolute";
+        div.style.top = "-9999px";
+        div.style.left = "-9999px";
+        div.style.whiteSpace = "pre-wrap";
+        div.style.wordWrap = "break-word";
+        props.forEach((prop) => {
+          div.style[prop] = style[prop];
+        });
+        if (element.tagName === "INPUT") {
+          div.style.whiteSpace = "nowrap";
+        } else {
+          // Textarea
+          div.style.height = `${element.clientHeight}px`;
+          div.style.overflowY = "scroll";
+          div.style.scrollTop = element.scrollTop;
+        }
+        div.style.width = `${element.clientWidth}px`;
+
+        // Copy text up to caret
+        div.textContent = element.value.substring(0, position);
+        div.appendChild(span);
+        span.textContent = element.value.substring(position) || ".";
+
+        document.body.appendChild(div);
+        const spanRect = span.getBoundingClientRect();
+        const divRect = div.getBoundingClientRect();
+        const coordinates = {
+          top: spanRect.top - divRect.top,
+          left: spanRect.left - divRect.left,
+          height: spanRect.height,
+        };
+        document.body.removeChild(div);
+        return coordinates;
+      }
+
+      // Setup for each field
+      document.addEventListener("DOMContentLoaded", () => {
+        const fields = [
+          {
+            input: document.getElementById("name"),
+            caret: document.getElementById("fake-caret-name"),
+          },
+          {
+            input: document.getElementById("email"),
+            caret: document.getElementById("fake-caret-email"),
+          },
+          {
+            input: document.getElementById("message"),
+            caret: document.getElementById("fake-caret-message"),
+          },
+        ];
+
+        fields.forEach(({ input, caret }) => {
+          if (!input || !caret) return;
+
+          const updateCaret = () => {
+            const coords = getCaretCoordinates(input);
+            caret.style.top = `${coords.top + input.scrollTop}px`; // Adjust for scroll in textarea
+            caret.style.left = `${coords.left}px`;
+            caret.classList.remove("hidden");
+          };
+
+          // Events to update position
+          input.addEventListener("focus", updateCaret);
+          input.addEventListener("input", updateCaret);
+          input.addEventListener("keyup", updateCaret);
+          input.addEventListener("keydown", updateCaret);
+          input.addEventListener("click", updateCaret);
+          input.addEventListener("scroll", updateCaret); // For textarea scrolling
+
+          // Hide on blur
+          input.addEventListener("blur", () => {
+            caret.classList.add("hidden");
+          });
         });
       });
     </script>

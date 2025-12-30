@@ -80,4 +80,24 @@ img {
   transform: translateY(8px) scale(0.98);
   opacity: 0;
 }
+/* Hide native caret */
+.custom-underscore-caret {
+    caret-color: transparent;  /* Hides the default | caret */
+    position: relative;  /* For absolute positioning of fake caret */
+}
 
+/* Fake caret styles */
+.fake-caret {
+    position: absolute;
+    color: rgb(255 255 255 / 0.9);  /* White to match your theme; adjust opacity */
+    font-size: inherit;  /* Match input font */
+    line-height: inherit;
+    pointer-events: none;  /* Don't block clicks/typing */
+    animation: blink 1s step-end infinite;  /* Blinking effect */
+    user-select: none;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    50.1%, 100% { opacity: 0; }
+}
