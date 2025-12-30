@@ -161,4 +161,16 @@ try {
       </div>
     </div>
   </Section>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('a').forEach((link) => {
+      // Only apply to links with an href (skip empty or invalid ones)
+      if (link.href) {
+        link.target = '_blank';
+        // Optional: Add rel="noopener noreferrer" for security (prevents new tab from accessing the original page)
+        link.rel = 'noopener noreferrer';
+      }
+    });
+  });
+</script>
 </Layout>
