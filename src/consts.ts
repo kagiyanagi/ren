@@ -3,7 +3,7 @@ export const SITE_DESCRIPTION =
   `A personal portfolio built with Astro and Tailwind CSS — take a look!`.trim();
 
 export const KNOWN_TECH =
-  `Astro,Tailwind CSS,JavaScript,Python,CSS,HTML,C,C++,Bash,VIM,React,Git,Photoshop,Figma,Pandas,NumPy,Hyprland`.split(
+  `Astro,Tailwind CSS,JavaScript,Python,CSS,HTML,C,C++,Bash,VIM,React,Git,Photoshop,Figma,Pandas,NumPy,Hyprland, Davinci Resolve, Docker`.split(
     ",",
   );
 export const ABOUT_ME =
