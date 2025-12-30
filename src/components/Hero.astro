@@ -4,30 +4,25 @@ import HeroImg from "@/hero.png";
 import { SITE_TITLE } from "@/consts";
 ---
 
-<div class="hero-bg hidden md:block h-screen hero-bg-animate absolute top-0"></div>
+<div class="hero-bg hidden md:block h-screen hero-bg-animate absolute top-0">
+</div>
 
 <section
-  class="h-screen relative w-full grid grid-cols-1 grid-rows-0 md:grid-cols-2 gap-0 items-center"
+  class="h-screen w-full grid place-items-center mb-12 grid-cols-1 sm:grid-cols-2"
   id="hero"
 >
-  <div class="grid place-items-center">
-    <div class="text-center">
-      <h1 class="font-bold text-5xl sm:text-8xl">{`<${SITE_TITLE} />`}</h1>
-      <h2 class="text-xl sm:text-4xl opacity-95 inline">
-        Engineer, GFX designer
-        <br />
-        and a Student.
-        <span class="blinking-cursor">_</span>
-      </h2>
-    </div>
+  <div class="text-center -mb-40 sm:mb-0">
+    <h1 class="font-bold text-5xl sm:text-8xl">{`<${SITE_TITLE} />`}</h1>
+    <h2 class="text-xl sm:text-4xl opacity-95 inline">
+      Engineer, GFX designer
+      <br />
+      and a Student.
+      <span class="blinking-cursor">_</span>
+    </h2>
   </div>
 
   <div>
-    <Image
-      alt="Hero"
-      src={HeroImg}
-      class="brightness-200 scale-100 invert"
-    />
+    <Image alt="Hero" src={HeroImg} class="brightness-200 scale-100 invert" />
   </div>
 </section>
 
@@ -53,7 +48,12 @@ import { SITE_TITLE } from "@/consts";
   }
 
   @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: 0; }
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
   }
 </style>

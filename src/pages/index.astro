@@ -10,14 +10,20 @@ import Layout from "@/layouts/Layout.astro";
 import Contact from "@/components/Contact.astro";
 import { Image } from "astro:assets";
 import VillainImg from "@/villain.png";
+import SMSImage from "@/sms.png";
 import { KNOWN_TECH } from "@/consts";
 const GITHUB_REPO = "kagiyanagi/ren";
 let commitISO = null;
 try {
-  const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/commits?per_page=1`);
+  const res = await fetch(
+    `https://api.github.com/repos/${GITHUB_REPO}/commits?per_page=1`,
+  );
   if (res.ok) {
     const json = await res.json();
-    commitISO = json?.[0]?.commit?.committer?.date ?? json?.[0]?.commit?.author?.date ?? null;
+    commitISO =
+      json?.[0]?.commit?.committer?.date ??
+      json?.[0]?.commit?.author?.date ??
+      null;
   } else {
     console.error("GitHub API responded with status", res.status);
   }
@@ -26,12 +32,11 @@ try {
 }
 ---
 
-
 <Layout title="Aman - Engineer, GFX designer and High school student">
   <Hero />
-  <Section title="About Me" class="relative w-full">
+  <Section title="About Me">
     <div
-      class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center min-h-[calc(160vh)] md:min-h-[calc(70vh)] sm:min-h-[calc(70vh)]"
+      class="w-full grid place-items-center gap-4 grid-cols-1 sm:grid-cols-2 min-h-[calc(160vh)] md:min-h-[calc(70vh)] sm:min-h-[calc(70vh)]"
     >
       {/* Left column: Hero image */}
       <div class="w-full flex justify-center">
@@ -44,7 +49,7 @@ try {
 
       {/* Right column: Text content */}
       <div
-        class="w-full flex flex-col justify-center text-lg sm:text-xl gap-4 max-w-screen-lg"
+        class="w-full flex flex-col justify-center text-lg sm:text-xl gap-4 max-w-screen-md"
       >
         <h3
           class="text-2xl sm:text-4xl opacity-95 mb-4 flex items-center gap-4 flex-col sm:flex-row"
@@ -73,7 +78,14 @@ try {
           I'm still highly motivated and committed to continuous learning and
           growth in the tech world.
         </p>
-        <p id="lastUpdated" class="text-zinc-600 text-xl cursor-help" title="This data is coming from my GitHub repository's latest commit." data-commit={commitISO}>Last updated: loading…</p>
+        <p
+          id="lastUpdated"
+          class="text-zinc-600 text-xl cursor-help"
+          title="This data is coming from my GitHub repository's latest commit."
+          data-commit={commitISO}
+        >
+          Last updated: loading…
+        </p>
 
         <script>
           const el = document.getElementById("lastUpdated");
@@ -112,9 +124,7 @@ try {
   </Section>
   <Section title="Technologies i ♥︎" full_screen={false}>
     <div class="w-full grid place-items-center mb-12">
-      <div
-        class="w-full gap-4 flex flex-wrap max-w-2xl text-lg justify-center"
-      >
+      <div class="w-full gap-4 flex flex-wrap max-w-2xl text-lg justify-center">
         {KNOWN_TECH.map((x) => <Breadcrumb title={x} />)}
       </div>
     </div>
@@ -130,10 +140,24 @@ try {
       <TicTacToe />
     </div>
   </Section>
-  <Section title="Contact" className={"max-w-screen-2xl mx-auto items-center mb-12"}>
+  <Section
+    title="Contact"
+    className={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center mb-12"}
+  >
     <div class="w-full grid place-items-center">
-      <div class="w-full max-w-xl">
-        <Contact />
+      <div
+        class="w-full grid place-items-center grid-cols-1 sm:grid-cols-2 min-h-[calc(160vh)] md:min-h-[calc(70vh)] sm:min-h-[calc(70vh)]"
+      >
+      <div class="flex flex-col  items-center">
+        <Image
+          alt="FBFBFBFBFBFB massage by Moeka Kiryū from Steins;Gate. GIF on http://anime.en.utf8art.com/arc/steins_gate_11.html"
+          src={SMSImage}
+          class="brightness-200 max-w-xs sm:max-w-sm invert"
+        />
+      </div>
+        <div class="w-full max-w-xl">
+          <Contact />
+        </div>
       </div>
     </div>
   </Section>
