@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "vercel-build": "pnpm run build",
     "preview": "astro preview",
     "astro": "astro",
     "fmt": "prettier . -w"
@@ -23,5 +24,9 @@
     "@tailwindcss/typography": "^0.5.16",
     "prettier": "^3.4.2",
     "prettier-plugin-astro": "^0.14.1"
+  }
+
+  ,"engines": {
+    "node": "22.x"
   }
 }
