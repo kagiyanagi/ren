@@ -30,6 +30,7 @@ body {
 input,
 textarea,
 h1,
+label,
 h2,
 h3,
 [contenteditable],
@@ -42,10 +43,8 @@ span {
 
 button,
 a,
-label {
-  /* Target clickable elements */
+a * {
   cursor: url("/public/cursors/tile_0137.png"), pointer;
-  /* Custom pointer for clickable elements */
 }
 
 body {
@@ -63,7 +62,7 @@ body {
   opacity: .04;
   z-index: 1000;
   pointer-events: none;
-  background: url(https://raw.githubusercontent.com/taimoorshahzada/Film-Grain-Noise-Effect-on-Background-in-Website-using-Pure-CSS/refs/heads/main/noise.gif);
+  background: url(/src/noise.gif);
 }
 
 pre,
@@ -96,16 +95,12 @@ img {
   height: 110%;
   word-wrap: break-word;
   white-space: pre-wrap;
-  line-height: 1.1;
-  opacity: 0.03;
+  line-height: 1.2;
+  opacity: 0.02;
   font-size: 2.5rem;
-  /* Smaller for density; was 3.25rem—adjust to 0.75rem for more */
   pointer-events: none;
   user-select: none;
   overflow: hidden;
-  /* Prevent scrollbars if text overflows */
-  letter-spacing: 0.07rem;
-  /* Optional: Tighten spacing for more density */
 }
 
 /* Notification bar styles */
