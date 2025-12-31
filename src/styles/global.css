@@ -4,29 +4,66 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: "RetroByte";
   src: url("/fonts/RetroByte.ttf") format("truetype");
   font-style: normal;
   font-display: swap;
 }
+
 .font-pixel {
   font-family: "RetroByte", monospace !important;
 }
-.custom-cursor-help{
-    cursor: url("/public/cursors/tile_0180.png"), help;  /* Custom help cursor */
+
+.custom-cursor-help {
+  cursor: url("/public/cursors/tile_0180.png"), help;
+  /* Custom help cursor */
 }
-html, body {
-    cursor: url("/public/cursors/tile_0026.png"), default;  /* Default arrow-like cursor for the page */
+
+html,
+body {
+  cursor: url("/public/cursors/tile_0026.png"), default;
+  /* Default arrow-like cursor for the page */
 }
-input, textarea, h1, h2, h3, [contenteditable], p, span {  /* Target text-selectable elements */
-    cursor: url("/public/cursors/tile_0141.png"), text;  /* Custom I-beam for text areas */
+
+input,
+textarea,
+h1,
+h2,
+h3,
+[contenteditable],
+p,
+span {
+  /* Target text-selectable elements */
+  cursor: url("/public/cursors/tile_0141.png"), text;
+  /* Custom I-beam for text areas */
 }
-button, a, label {  /* Target clickable elements */
-    cursor: url("/public/cursors/tile_0137.png"), pointer;  /* Custom pointer for clickable elements */
+
+button,
+a,
+label {
+  /* Target clickable elements */
+  cursor: url("/public/cursors/tile_0137.png"), pointer;
+  /* Custom pointer for clickable elements */
 }
+
 body {
   font-family: "VCR", monospace !important;
+  background-color: #000000;
+}
+
+.noise::before {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  content: "";
+  opacity: .04;
+  z-index: 1000;
+  pointer-events: none;
+  background: url(https://raw.githubusercontent.com/taimoorshahzada/Film-Grain-Noise-Effect-on-Background-in-Website-using-Pure-CSS/refs/heads/main/noise.gif);
 }
 
 pre,
@@ -61,11 +98,14 @@ img {
   white-space: pre-wrap;
   line-height: 1.1;
   opacity: 0.03;
-  font-size: 2.5rem;  /* Smaller for density; was 3.25rem—adjust to 0.75rem for more */
+  font-size: 2.5rem;
+  /* Smaller for density; was 3.25rem—adjust to 0.75rem for more */
   pointer-events: none;
   user-select: none;
-  overflow: hidden;  /* Prevent scrollbars if text overflows */
-  letter-spacing: 0.07rem;  /* Optional: Tighten spacing for more density */
+  overflow: hidden;
+  /* Prevent scrollbars if text overflows */
+  letter-spacing: 0.07rem;
+  /* Optional: Tighten spacing for more density */
 }
 
 /* Notification bar styles */
@@ -74,33 +114,50 @@ img {
   flex-direction: column;
   align-items: center;
 }
+
 .notify-item {
   transition: transform 0.28s ease, opacity 0.28s ease;
   transform-origin: center bottom;
   opacity: 1;
 }
+
 .notify-hide {
   transform: translateY(8px) scale(0.98);
   opacity: 0;
 }
+
 /* Hide native caret */
 .custom-underscore-caret {
-    caret-color: transparent;  /* Hides the default | caret */
-    position: relative;  /* For absolute positioning of fake caret */
+  caret-color: transparent;
+  /* Hides the default | caret */
+  position: relative;
+  /* For absolute positioning of fake caret */
 }
 
 /* Fake caret styles */
 .fake-caret {
-    position: absolute;
-    color: rgb(255 255 255 / 0.9);  /* White to match your theme; adjust opacity */
-    font-size: inherit;  /* Match input font */
-    line-height: inherit;
-    pointer-events: none;  /* Don't block clicks/typing */
-    animation: blink 1s step-end infinite;  /* Blinking effect */
-    user-select: none;
+  position: absolute;
+  color: rgb(255 255 255 / 0.9);
+  /* White to match your theme; adjust opacity */
+  font-size: inherit;
+  /* Match input font */
+  line-height: inherit;
+  pointer-events: none;
+  /* Don't block clicks/typing */
+  animation: blink 1s step-end infinite;
+  /* Blinking effect */
+  user-select: none;
 }
 
 @keyframes blink {
-    0%, 50% { opacity: 1; }
-    50.1%, 100% { opacity: 0; }
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  50.1%,
+  100% {
+    opacity: 0;
+  }
 }
