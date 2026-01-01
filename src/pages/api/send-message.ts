@@ -1,121 +1,218 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
-// Ensure this endpoint runs server-side so request headers/body are available
 export const prerender = false;
 
-const TELEGRAM_TOKEN = process.env.BOT_TOKEN || process.env.TELEGRAM_TOKEN || "7699522419:AAH1qfYBP3pf3F3mzZIzmuPGRy0Z5IPNys4";
-const TELEGRAM_CHAT_ID = process.env.CHAT_ID || process.env.TELEGRAM_CHAT_ID || "6310601796";
+type IncomingBody = {
+  name?: unknown;
+  email?: unknown;
+  message?: unknown;
+};
+
+type ValidatedInput = {
+  name: string;
+  email: string;
+  message: string;
+};
+
+const JSON_HEADERS = {
+  "Content-Type": "application/json; charset=utf-8",
+} as const;
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    // Diagnostic: log incoming request metadata (not body content)
-    const ct = request.headers.get('content-type');
-    const cl = request.headers.get('content-length');
-    console.log('[send-message] Incoming', { method: request.method, ct, cl });
-    console.log('[send-message] headers', Object.fromEntries(request.headers.entries()));
+    const env = readTelegramEnv();
 
-    // Try reading raw bytes first to avoid any text()/json() edge cases
-    let raw = '';
+    const contentType = request.headers.get("content-type") ?? "";
+    const isJson = contentType.toLowerCase().includes("application/json");
+
+    if (!isJson) {
+      return json(
+        415,
+        {
+          ok: false,
+          error: "Unsupported Media Type. Please send application/json.",
+        },
+        {
+          "Accept-Post": "application/json",
+        },
+      );
+    }
+
+    const raw = await safeReadText(request, 32_768); // 32KB max
+    if (!raw) {
+      return json(400, { ok: false, error: "Empty request body." });
+    }
+
+    let parsed: unknown;
     try {
-      const buf = await request.arrayBuffer();
-      console.log('[send-message] arrayBuffer.byteLength', buf.byteLength);
-      if (buf && buf.byteLength > 0) {
-        raw = new TextDecoder().decode(buf);
-      }
-    } catch (e) {
-      console.warn('[send-message] request.arrayBuffer() failed', String(e));
+      parsed = JSON.parse(raw);
+    } catch {
+      return json(400, { ok: false, error: "Invalid JSON." });
     }
 
-    // If arrayBuffer read nothing, try using clone().text() then direct text()
-    if (!raw) {
-      try {
-        raw = await request.clone().text();
-      } catch (e) {
-        console.warn('[send-message] clone().text() failed', String(e));
-      }
+    const validated = validateIncomingBody(parsed);
+    if (!validated.ok) {
+      return json(400, { ok: false, error: validated.error });
     }
 
-    if (!raw) {
-      try {
-        raw = await request.text();
-      } catch (e) {
-        console.warn('[send-message] request.text() failed', String(e));
-      }
-    }
+    const { name, email, message } = validated.value;
 
-    // If still empty, try formData fallback (some clients send urlencoded/form-data)
-    if (!raw) {
-      try {
-        const form = await request.formData();
-        const obj: any = {};
-        for (const [k, v] of form.entries()) obj[k] = String(v);
-        if (Object.keys(obj).length > 0) {
-          // use form-derived body
-          const name = obj.name || 'Anonymous';
-          const email = obj.email || 'No email';
-          const message = obj.message || '';
-          console.log('[send-message] Parsed formData', obj);
-          return await sendToTelegram({ name, email, message });
-        }
-      } catch (e) {
-        console.warn('[send-message] formData() failed', String(e));
-      }
-    }
+    const text = formatTelegramMessage({ name, email, message });
 
-    if (!raw) {
-      return new Response(JSON.stringify({ ok: false, error: 'Empty request body', diag: { ct, cl } }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
+    const telegramResp = await fetch(
+      `https://api.telegram.org/bot${env.token}/sendMessage`,
+      {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify({
+          chat_id: env.chatId,
+          text,
+          // Keep it conservative; users often paste code/URLs that don't play well with Markdown
+          // parse_mode: "MarkdownV2",
+          disable_web_page_preview: true,
+        }),
+      },
+    );
+
+    // Avoid returning upstream response bodies directly; they can include details you don't want to leak.
+    if (!telegramResp.ok) {
+      const details = await safeReadText(telegramResp, 8_192);
+      return json(502, {
+        ok: false,
+        error: "Failed to deliver message.",
+        upstream: {
+          status: telegramResp.status,
+          body: details || null,
+        },
       });
     }
 
-    console.log('[send-message] raw body length', raw.length, 'snippet', raw.slice(0, 200));
-
-    let body: any;
-    try {
-      body = JSON.parse(raw);
-    } catch (e: any) {
-      return new Response(JSON.stringify({ ok: false, error: `Invalid JSON: ${e?.message || String(e)}`, raw }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    const name = body.name || 'Anonymous';
-    const email = body.email || 'No email';
-    const message = body.message || '';
-
-    const text = `📬 New Message from Contact Form\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
-
-    return await sendToTelegram({ name, email, message });
-  } catch (err: any) {
-    return new Response(JSON.stringify({ ok: false, error: err?.message || String(err) }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return json(200, { ok: true });
+  } catch (err) {
+    return json(500, { ok: false, error: errorMessage(err) });
   }
 };
 
-async function sendToTelegram({ name, email, message }: { name: string; email: string; message: string }) {
-  const text = `📬 New Message from Contact Form\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
+function readTelegramEnv(): { token: string; chatId: string } {
+  // Prefer explicit names, but support common alternatives.
+  const token =
+    process.env.BOT_TOKEN?.trim() ?? process.env.TELEGRAM_TOKEN?.trim() ?? "";
+  const chatId =
+    process.env.CHAT_ID?.trim() ?? process.env.TELEGRAM_CHAT_ID?.trim() ?? "";
 
-  const resp = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
-  });
-
-  const respText = await resp.text().catch(() => '');
-
-  if (!resp.ok) {
-    return new Response(JSON.stringify({ ok: false, error: 'Telegram API error', details: respText || null }), {
-      status: 502,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  if (!token || !chatId) {
+    // Fail fast with a clear message for deploy-time configuration.
+    // This is safe to return to the client: it does not include secrets.
+    throw new Error(
+      "Server is not configured: missing TELEGRAM_TOKEN/BOT_TOKEN and/or TELEGRAM_CHAT_ID/CHAT_ID.",
+    );
   }
 
-  return new Response(JSON.stringify({ ok: true, telegram: respText || null }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
+  // Light sanity checks (don’t overfit).
+  if (!token.includes(":")) {
+    throw new Error("Server is not configured: Telegram token looks invalid.");
+  }
+
+  return { token, chatId };
+}
+
+function validateIncomingBody(
+  body: unknown,
+): { ok: true; value: ValidatedInput } | { ok: false; error: string } {
+  if (!body || typeof body !== "object") {
+    return { ok: false, error: "Request body must be a JSON object." };
+  }
+
+  const b = body as IncomingBody;
+
+  const name = normalizeString(b.name);
+  const email = normalizeString(b.email);
+  const message = normalizeString(b.message);
+
+  if (!name) return { ok: false, error: "Name is required." };
+  if (!email) return { ok: false, error: "Email is required." };
+  if (!message) return { ok: false, error: "Message is required." };
+
+  if (name.length > 80) return { ok: false, error: "Name is too long." };
+  if (email.length > 254) return { ok: false, error: "Email is too long." };
+  if (message.length > 4000)
+    return { ok: false, error: "Message is too long." };
+
+  if (!isValidEmail(email)) {
+    return { ok: false, error: "Email is invalid." };
+  }
+
+  return { ok: true, value: { name, email, message } };
+}
+
+function normalizeString(value: unknown): string {
+  if (typeof value !== "string") return "";
+  // Trim and collapse excessive whitespace
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function isValidEmail(email: string): boolean {
+  // Basic but practical email validation.
+  // If you need stricter validation later, consider delegating to a library.
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function formatTelegramMessage(input: ValidatedInput): string {
+  // Keep it plain-text. Telegram supports it well and avoids escaping issues.
+  const safeName = clampForTelegram(input.name, 200);
+  const safeEmail = clampForTelegram(input.email, 300);
+  const safeMessage = clampForTelegram(input.message, 3500);
+
+  return [
+    "📬 New Message from Contact Form",
+    "",
+    `Name: ${safeName}`,
+    `Email: ${safeEmail}`,
+    "",
+    "Message:",
+    safeMessage,
+  ].join("\n");
+}
+
+function clampForTelegram(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text;
+  return text.slice(0, Math.max(0, maxLen - 1)) + "…";
+}
+
+async function safeReadText(
+  input: Request | Response,
+  maxBytes: number,
+): Promise<string> {
+  // Read as text with a hard cap to avoid abuse.
+  // We use ArrayBuffer to apply the cap reliably.
+  const buf = await input.arrayBuffer().catch(() => null);
+  if (!buf) return "";
+
+  const view = new Uint8Array(buf);
+  if (view.byteLength === 0) return "";
+
+  if (view.byteLength > maxBytes) {
+    throw new Error("Request body is too large.");
+  }
+
+  return new TextDecoder("utf-8", { fatal: false }).decode(view);
+}
+
+function json(
+  status: number,
+  payload: unknown,
+  extraHeaders?: Record<string, string>,
+): Response {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: {
+      ...JSON_HEADERS,
+      ...(extraHeaders ?? {}),
+    },
   });
+}
+
+function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err);
 }
