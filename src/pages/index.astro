@@ -10,7 +10,7 @@ import Layout from "@/layouts/Layout.astro";
 import Contact from "@/components/Contact.astro";
 import { Image } from "astro:assets";
 import VillainImg from "@/villain.png";
-import SMSImage from "@/sms.png";
+import House from "@/house.gif";
 import { KNOWN_TECH } from "@/consts";
 const GITHUB_REPO = "kagiyanagi/ren";
 let commitISO = null;
@@ -34,9 +34,9 @@ try {
 
 <Layout title="Aman - Engineer, GFX designer and High school student">
   <Hero />
-  <Section title="About me">
+  <Section title="About me" className={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center"}>
     <div
-      class="w-full grid place-items-center gap-4 grid-cols-1 sm:grid-cols-2 min-h-[calc(160vh)] md:min-h-[calc(70vh)] sm:min-h-[calc(70vh)]"
+      class="w-full grid place-items-center gap-4 grid-cols-1 sm:grid-cols-2"
     >
       {/* Left column: Hero image */}
       <div class="w-full flex justify-center">
@@ -63,7 +63,7 @@ try {
           currently in high school. My interests span a wide range in Computer
           Science, including:
         </p>
-        <p class="opacity-95">
+        <p class="opacity-95House">
           Web development, IoT, Machine learning, Linux(Arch btw). I'm a big fan
           of anime (MAL link in navbar) and music, which both inspire my
           creativity. Core Android development: I love building custom ROMs and
@@ -144,20 +144,18 @@ try {
     title="Contact me"
     className={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center"}
   >
-    <div class="w-full grid place-items-center">
       <div
-        class="w-full grid place-items-center grid-cols-1 sm:grid-cols-2 min-h-[calc(160vh)] md:min-h-[calc(70vh)] sm:min-h-[calc(70vh)]"
+        class="w-full grid place-items-center grid-cols-1 sm:grid-cols-2"
       >
       <div class="flex flex-col  items-center">
         <Image
           alt="FBFBFBFBFBFB massage by Moeka Kiryū from Steins;Gate. GIF on http://anime.en.utf8art.com/arc/steins_gate_11.html"
-          src={SMSImage}
-          class="brightness-200 max-w-xs sm:max-w-sm invert"
+          src={House}
+          class="brightness-200 max-w-xs sm:max-w-sm"
         />
       </div>
         <div class="w-full max-w-xl">
           <Contact />
-        </div>
       </div>
     </div>
   </Section>

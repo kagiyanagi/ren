@@ -52,19 +52,6 @@ body {
   background-color: #000000;
 }
 
-.noise::before {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  content: "";
-  opacity: .04;
-  z-index: 1000;
-  pointer-events: none;
-  background: url(/src/noise.gif);
-}
-
 pre,
 code {
   font-family: "VCR", monospace !important;
@@ -96,7 +83,7 @@ img {
   word-wrap: break-word;
   white-space: pre-wrap;
   line-height: 1.2;
-  opacity: 0.02;
+  opacity: 0.04;
   font-size: 2.5rem;
   pointer-events: none;
   user-select: none;
