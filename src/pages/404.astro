@@ -1,0 +1,88 @@
+---
+import { Image } from "astro:assets";
+import MainImage from "@/miku.png";
+import "@/styles/global.css";
+---
+
+<section
+    class="bg-black h-screen w-screen text-white place-items-center flex
+    justify-center"
+>
+    <div
+        class="hero-bg hidden md:block h-screen hero-bg-animate absolute top-0"
+    >
+    </div>
+    <div class="grid place-items-center">
+        <Image
+            alt="Profile illustration"
+            src={MainImage}
+            class="brightness-200 max-w-xs sm:max-w-sm md:max-w-md object-contain invert rounded-3xl"
+        />
+        <h1 class="text-3xl font-extrabold font-pixel">404, Page not found :'(</h1>
+        <a class="text-xl font-extrabold" href="/"
+            >You might wanna check home page. <span class="blinking-cursor"
+                >_</span
+            ></a
+        >
+    </div>
+    <style>
+        .hero-bg {
+            width: 100%;
+            height: 100%;
+        }
+        .blinking-cursor {
+            display: inline-block;
+            color: white;
+            font-weight: bold;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+    </style>
+    <script is:inline>
+        const heroBg = document.querySelector(".hero-bg-animate");
+
+        function generateBinary() {
+            if (!heroBg) return;
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Adjust these based on your font (monospace avg char width ~0.6em, line height 1)
+            const fontSizePx = parseFloat(getComputedStyle(heroBg).fontSize); // Gets current CSS font-size in px
+            const charWidth = fontSizePx * 0.6; // Approx for monospace '0' or '1'
+            const lineHeight = fontSizePx * 1.0; // Matches CSS line-height: 1
+
+            const charsPerLine = Math.ceil(width / charWidth) + 10; // Extra for safety/margins
+            const linesNeeded = Math.ceil(height / lineHeight) + 5; // Extra for overflow/scroll
+
+            let totalChars = charsPerLine * linesNeeded;
+            totalChars = Math.min(totalChars, 50000); // Cap for perf (adjust if needed)
+
+            let binaryText = "";
+            for (let i = 0; i < totalChars; i++) {
+                binaryText += Math.floor(Math.random() * 2).toString();
+            }
+
+            heroBg.textContent = binaryText;
+        }
+
+        // Initial generation
+        generateBinary();
+
+        // Animate every 300ms
+        setInterval(generateBinary, 300);
+
+        // Regenerate on resize
+        window.addEventListener("resize", generateBinary);
+    </script>
+</section>
