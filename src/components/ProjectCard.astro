@@ -1,0 +1,45 @@
+---
+import WindowCard from "@/components/WindowCard.astro";
+
+type Props = {
+  title: string;
+  href: string;
+  date: string;
+  description: string;
+};
+
+const { title, href, date, description } = Astro.props;
+---
+
+<WindowCard>
+  <a href={href} class="block group">
+    <h2 class="text-xl font-medium text-white mb-2">
+      <span class="text-white/70 mr-2">❯</span>
+      {title}
+    </h2>
+    <p class="text-white font-medium tracking-widest text-sm mb-4">
+      [{date}]
+    </p>
+    <p class="text-white/80 text-sm font-thin mb-4 line-clamp-1">
+      {description}
+    </p>
+    <p
+      class="text-white absolute bottom-4 font-medium inline-flex items-center group-hover:underline-offset-4 underline-offset-8 underline transition-all ease-in-out"
+    >
+      Read more
+      <svg
+        class="w-4 h-4 ml-2 transform group-hover:-translate-x-1 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width={2}
+          d="M9 5l7 7-7 7"></path>
+      </svg>
+    </p>
+  </a>
+</WindowCard>

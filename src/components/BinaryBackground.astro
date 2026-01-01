@@ -1,0 +1,57 @@
+---
+type Props = {
+  className?: string;
+};
+
+const { className = "" } = Astro.props;
+const passedClass = (Astro.props as any).class ?? className ?? "";
+---
+
+<div
+  class={`hero-bg hero-bg-animate ${passedClass}`}
+  data-binary-bg
+  aria-hidden="true"
+>
+</div>
+
+<script is:inline>
+  const targets = Array.from(document.querySelectorAll("[data-binary-bg]"));
+
+  function generateBinary(el) {
+    if (!el) return;
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    const fontSizePx = parseFloat(getComputedStyle(el).fontSize) || 16;
+    // Approximate character metrics to size the binary field.
+    const charWidth = fontSizePx * 0.6;
+    const lineHeight = fontSizePx * 1.0;
+
+    const charsPerLine = Math.ceil(width / charWidth) + 10;
+    const linesNeeded = Math.ceil(height / lineHeight) + 5;
+
+    let totalChars = charsPerLine * linesNeeded;
+    // Cap size to avoid jank on very large screens.
+    totalChars = Math.min(totalChars, 50000);
+
+    let binaryText = "";
+    for (let i = 0; i < totalChars; i++) {
+      binaryText += Math.floor(Math.random() * 2).toString();
+    }
+
+    el.textContent = binaryText;
+  }
+
+  function generateAll() {
+    targets.forEach((el) => generateBinary(el));
+  }
+
+  if (targets.length) {
+    generateAll();
+
+    setInterval(generateAll, 300);
+
+    window.addEventListener("resize", generateAll);
+  }
+</script>
