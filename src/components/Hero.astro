@@ -7,12 +7,15 @@ import BinaryBackground from "@/components/BinaryBackground.astro";
 
 <div class="relative">
   <BinaryBackground className="absolute inset-0 z-0 h-[100svh]" />
+  <div class="terminal-overlay" aria-hidden="true"></div>
 
   <section
     class="relative z-10 overflow-hidden min-h-[100svh] w-full grid items-center mb-12 grid-cols-1 sm:grid-cols-2"
     id="hero"
   >
-    <div class="text-center -mb-40 sm:mb-0">
+    <div
+      class="text-center -mb-40 sm:mb-0 terminal-flicker terminal-glow px-6 py-8"
+    >
       <h1 class="font-bold text-5xl sm:text-8xl font-pixel">
         {`<${SITE_TITLE} />`}
       </h1>
