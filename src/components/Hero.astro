@@ -5,29 +5,31 @@ import { SITE_TITLE } from "@/consts";
 import BinaryBackground from "@/components/BinaryBackground.astro";
 ---
 
-<BinaryBackground className="absolute inset-0 -z-10 h-[100svh]" />
+<div class="relative">
+  <BinaryBackground className="absolute inset-0 z-0 h-[100svh]" />
 
-<section
-  class="relative overflow-hidden min-h-[100svh] w-full grid items-center mb-12 grid-cols-1 sm:grid-cols-2"
-  id="hero"
->
-  <div class="text-center -mb-40 sm:mb-0">
-    <h1 class="font-bold text-5xl sm:text-8xl font-pixel">
-      {`<${SITE_TITLE} />`}
-    </h1>
-    <h2 class="text-xl sm:text-4xl opacity-95 inline">
-      Engineer, GFX designer
-      <br />
-      and a Student.
-      <span class="blinking-cursor">_</span>
-    </h2>
-  </div>
+  <section
+    class="relative z-10 overflow-hidden min-h-[100svh] w-full grid items-center mb-12 grid-cols-1 sm:grid-cols-2"
+    id="hero"
+  >
+    <div class="text-center -mb-40 sm:mb-0">
+      <h1 class="font-bold text-5xl sm:text-8xl font-pixel">
+        {`<${SITE_TITLE} />`}
+      </h1>
+      <h2 class="text-xl sm:text-4xl opacity-95 inline">
+        Engineer, GFX designer
+        <br />
+        and a Student.
+        <span class="blinking-cursor">_</span>
+      </h2>
+    </div>
 
-  <div class="w-full flex items-center justify-center sm:justify-end">
-    <Image
-      alt="Shinji Ikari from Neon Genesis Evangelion. source:(http://anime.en.utf8art.com/arc/evangelion_28.html)"
-      src={HeroImg}
-      class="brightness-200 invert h-full w-auto max-w-full"
-    />
-  </div>
-</section>
+    <div class="w-full flex items-center justify-center sm:justify-end">
+      <Image
+        alt="Shinji Ikari from Neon Genesis Evangelion. source:(http://anime.en.utf8art.com/arc/evangelion_28.html)"
+        src={HeroImg}
+        class="brightness-200 invert h-full w-auto max-w-full"
+      />
+    </div>
+  </section>
+</div>
