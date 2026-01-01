@@ -67,14 +67,12 @@ export const POST: APIRoute = async ({ request }) => {
         body: JSON.stringify({
           chat_id: env.chatId,
           text,
-          // Keep it conservative; users often paste code/URLs that don't play well with Markdown
-          // parse_mode: "MarkdownV2",
           disable_web_page_preview: true,
         }),
       },
     );
 
-    // Avoid returning upstream response bodies directly; they can include details you don't want to leak.
+    // Avoid echoing Telegram responses directly to the client.
     if (!telegramResp.ok) {
       const details = await safeReadText(telegramResp, 8_192);
       return json(502, {
@@ -94,21 +92,40 @@ export const POST: APIRoute = async ({ request }) => {
 };
 
 function readTelegramEnv(): { token: string; chatId: string } {
-  // Prefer explicit names, but support common alternatives.
+  // Astro dev exposes .env via import.meta.env; fall back to process.env at runtime.
+  const metaEnv = import.meta.env as Record<string, string | undefined>;
+  const env = process.env as Record<string, string | undefined>;
+
   const token =
-    process.env.BOT_TOKEN?.trim() ?? process.env.TELEGRAM_TOKEN?.trim() ?? "";
+    metaEnv.BOT_TOKEN?.trim() ??
+    metaEnv.TELEGRAM_BOT_TOKEN?.trim() ??
+    metaEnv.TELEGRAM_TOKEN?.trim() ??
+    metaEnv.TG_BOT_TOKEN?.trim() ??
+    env.BOT_TOKEN?.trim() ??
+    env.TELEGRAM_BOT_TOKEN?.trim() ??
+    env.TELEGRAM_TOKEN?.trim() ??
+    env.TG_BOT_TOKEN?.trim() ??
+    "";
   const chatId =
-    process.env.CHAT_ID?.trim() ?? process.env.TELEGRAM_CHAT_ID?.trim() ?? "";
+    metaEnv.CHAT_ID?.trim() ??
+    metaEnv.TELEGRAM_CHAT_ID?.trim() ??
+    metaEnv.TELEGRAM_CHATID?.trim() ??
+    metaEnv.TELEGRAM_BOT_CHAT_ID?.trim() ??
+    metaEnv.TG_CHAT_ID?.trim() ??
+    env.CHAT_ID?.trim() ??
+    env.TELEGRAM_CHAT_ID?.trim() ??
+    env.TELEGRAM_CHATID?.trim() ??
+    env.TELEGRAM_BOT_CHAT_ID?.trim() ??
+    env.TG_CHAT_ID?.trim() ??
+    "";
 
   if (!token || !chatId) {
-    // Fail fast with a clear message for deploy-time configuration.
-    // This is safe to return to the client: it does not include secrets.
+    // Safe to return to the client: it does not include secrets.
     throw new Error(
       "Server is not configured: missing TELEGRAM_TOKEN/BOT_TOKEN and/or TELEGRAM_CHAT_ID/CHAT_ID.",
     );
   }
 
-  // Light sanity checks (don’t overfit).
   if (!token.includes(":")) {
     throw new Error("Server is not configured: Telegram token looks invalid.");
   }
@@ -147,18 +164,14 @@ function validateIncomingBody(
 
 function normalizeString(value: unknown): string {
   if (typeof value !== "string") return "";
-  // Trim and collapse excessive whitespace
   return value.trim().replace(/\s+/g, " ");
 }
 
 function isValidEmail(email: string): boolean {
-  // Basic but practical email validation.
-  // If you need stricter validation later, consider delegating to a library.
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function formatTelegramMessage(input: ValidatedInput): string {
-  // Keep it plain-text. Telegram supports it well and avoids escaping issues.
   const safeName = clampForTelegram(input.name, 200);
   const safeEmail = clampForTelegram(input.email, 300);
   const safeMessage = clampForTelegram(input.message, 3500);
@@ -183,8 +196,7 @@ async function safeReadText(
   input: Request | Response,
   maxBytes: number,
 ): Promise<string> {
-  // Read as text with a hard cap to avoid abuse.
-  // We use ArrayBuffer to apply the cap reliably.
+  // Hard cap request size to avoid abuse.
   const buf = await input.arrayBuffer().catch(() => null);
   if (!buf) return "";
 

@@ -2,16 +2,13 @@
 import Hero from "@/components/Hero.astro";
 import Breadcrumb from "@/components/Breadcrumb.astro";
 import Section from "@/components/Section.astro";
-import C2fetch from "@/components/C2fetch.astro";
-import TicTacToe from "@/components/TicTacToe.astro";
-import Aquamarinekernel from "@/components/Aquamarinekernel.astro";
-import Todohcj from "@/components/Todohcj.astro";
+import ProjectCard from "@/components/ProjectCard.astro";
 import Layout from "@/layouts/Layout.astro";
 import Contact from "@/components/Contact.astro";
 import { Image } from "astro:assets";
 import VillainImg from "@/villain.png";
 import House from "@/house.gif";
-import { KNOWN_TECH } from "@/consts";
+import { KNOWN_TECH, PROJECTS } from "@/consts";
 const GITHUB_REPO = "kagiyanagi/ren";
 let commitISO = null;
 try {
@@ -41,7 +38,6 @@ try {
     <div
       class="w-full grid place-items-center gap-4 grid-cols-1 sm:grid-cols-2"
     >
-      {/* Left column: Hero image */}
       <div class="w-full flex justify-center">
         <Image
           alt="Profile illustration"
@@ -50,7 +46,6 @@ try {
         />
       </div>
 
-      {/* Right column: Text content */}
       <div
         class="w-full flex flex-col justify-center text-lg sm:text-xl gap-4 max-w-screen-md"
       >
@@ -66,7 +61,7 @@ try {
           currently in high school. My interests span a wide range in Computer
           Science, including:
         </p>
-        <p class="opacity-95House">
+        <p class="opacity-95">
           Web development, IoT, Machine learning, Linux(Arch btw). I'm a big fan
           of anime (<a
             class="underline transition-all"
@@ -139,10 +134,7 @@ try {
     className={"bg-gradient-to-b from-black/70 from-[5%] to-black via-black max-w-screen-2xl mx-auto items-center mb-12"}
   >
     <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-      <C2fetch />
-      <Aquamarinekernel />
-      <Todohcj />
-      <TicTacToe />
+      {PROJECTS.map((project) => <ProjectCard {...project} />)}
     </div>
   </Section>
   <Section
@@ -167,10 +159,8 @@ try {
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll("a").forEach((link) => {
-        // Only apply to links with an href (skip empty or invalid ones)
         if (link.href) {
           link.target = "_blank";
-          // Optional: Add rel="noopener noreferrer" for security (prevents new tab from accessing the original page)
           link.rel = "noopener noreferrer";
         }
       });

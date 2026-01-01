@@ -1,357 +1,304 @@
 ---
-// Contact component for Telegram messaging
+import WindowCard from "@/components/WindowCard.astro";
+
+const inputClass =
+  "bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors custom-underscore-caret w-full";
+const labelClass = "text-white/70 text-sm";
+const errorClass = "text-red-400 text-sm mt-1";
 ---
-<div
-  class="w-full mx-auto bg-gradient-to-br relative pb-5 from-white/[0.001] to-white/[0.01] rounded-lg overflow-hidden"
->
-  <div class="flex items-center justify-start px-4 py-2 bg-white/95">
-    <div class="flex space-x-2">
-      <div class="w-3 h-3 rounded-full bg-black"></div>
-      <div class="w-3 h-3 rounded-full bg-black"></div>
-      <div class="w-3 h-3 rounded-full bg-black"></div>
+
+<WindowCard bordered={false}>
+  <h2 class="text-xl font-medium text-white mb-4">
+    <span class="text-white/70 mr-2">❯</span>
+    Get in touch
+  </h2>
+  <p class="text-white/80 text-sm font-thin mb-6">
+    What to sent me a massage? Then go ahead!
+  </p>
+  <form id="contact-form" class="flex flex-col gap-4" novalidate>
+    <div class="flex flex-col gap-2">
+      <label for="name" class={labelClass}>Name</label>
+      <div class="relative">
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Your name"
+          required
+          class={inputClass}
+        />
+        <span id="fake-caret-name" class="fake-caret hidden">_</span>
+      </div>
+      <span id="err-name" class={errorClass}></span>
     </div>
-  </div>
-  <div class="p-6 tracking-wider">
-    <h2 class="text-xl font-medium text-white mb-4">
-      <span class="text-white/70 mr-2">❯</span>
-      Get in touch
-    </h2>
-    <p class="text-white/80 text-sm font-thin mb-6">
-      What to sent me a massage? Then go ahead!
-    </p>
-    <form class="flex flex-col gap-4" novalidate>
-      <div class="flex flex-col gap-2">
-        <label for="name" class="text-white/70 text-sm">Name</label>
-        <div class="relative">
-          <input
-            type="text"
-            id="name"
-            name="name"
-            placeholder="Your name"
-            required
-            class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors custom-underscore-caret w-full"
-          />
-          <span id="fake-caret-name" class="fake-caret hidden">_</span>
-        </div>
-        <span id="err-name" class="text-red-400 text-sm mt-1"></span>
+    <div class="flex flex-col gap-2">
+      <label for="email" class={labelClass}>Email</label>
+      <div class="relative">
+        <input
+          type="text"
+          id="email"
+          name="email"
+          placeholder="your@email.com"
+          required
+          class={inputClass}
+        />
+        <span id="fake-caret-email" class="fake-caret hidden">_</span>
       </div>
-      <div class="flex flex-col gap-2">
-        <label for="email" class="text-white/70 text-sm">Email</label>
-        <div class="relative">
-          <input
-            type="text"
-            id="email"
-            name="email"
-            placeholder="your@email.com"
-            required
-            class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors custom-underscore-caret w-full"
-          />
-          <span id="fake-caret-email" class="fake-caret hidden">_</span>
-        </div>
-        <span id="err-email" class="text-red-400 text-sm mt-1"></span>
+      <span id="err-email" class={errorClass}></span>
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="message" class={labelClass}>Message</label>
+      <div class="relative">
+        <textarea
+          id="message"
+          name="message"
+          placeholder="Your message..."
+          rows="5"
+          required
+          class={`${inputClass} resize-none`}></textarea>
+        <span id="fake-caret-message" class="fake-caret hidden">_</span>
       </div>
-      <div class="flex flex-col gap-2">
-        <label for="message" class="text-white/70 text-sm">Message</label>
-        <div class="relative">
-          <textarea
-            id="message"
-            name="message"
-            placeholder="Your message..."
-            rows="5"
-            required
-            class="bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors resize-none custom-underscore-caret w-full"
-          ></textarea>
-          <span id="fake-caret-message" class="fake-caret hidden">_</span>
-        </div>
-        <span id="err-message" class="text-red-400 text-sm mt-1"></span>
-      </div>
-      <button
-        type="submit"
-        id="send-btn"
-        class="bg-white/10 text-white font-medium py-2 px-4 rounded hover:bg-white/20 transition-all ease-in-out"
-      >
-        Send Message
-      </button>
-    </form>
-    <div
-      id="__notification_root"
-      aria-live="polite"
-      class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none"
+      <span id="err-message" class={errorClass}></span>
+    </div>
+    <button
+      type="submit"
+      id="send-btn"
+      class="bg-white/10 text-white font-medium py-2 px-4 rounded hover:bg-white/20 transition-all ease-in-out"
     >
-    </div>
-    <script type="module">
-      (function () {
-        const root = document.getElementById("__notification_root");
-        if (!root) return;
-        function makeNode(message, type) {
-          const el = document.createElement("div");
-          el.className =
-            "notify-item pointer-events-auto max-w-xl w-full mx-auto rounded-md px-4 py-2 mb-2 text-sm shadow-lg flex items-center gap-3 justify-between";
-          el.setAttribute("role", "status");
-          const bg = type === "success" ? "bg-emerald-600" : "bg-rose-600";
-          el.classList.add(...bg.split(" "));
-          const txt = document.createElement("div");
-          txt.textContent = message;
-          txt.className = "text-white";
-          const close = document.createElement("button");
-          close.className = "text-white/80 hover:text-white ml-4";
-          close.innerHTML = "✕";
-          close.addEventListener("click", () => {
-            hide(el);
-          });
-          el.appendChild(txt);
-          el.appendChild(close);
-          return el;
+      Send Message
+    </button>
+  </form>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("contact-form");
+      const nameEl = document.getElementById("name");
+      const emailEl = document.getElementById("email");
+      const msgEl = document.getElementById("message");
+      const errName = document.getElementById("err-name");
+      const errEmail = document.getElementById("err-email");
+      const errMsg = document.getElementById("err-message");
+      const sendBtn = document.getElementById("send-btn");
+      function clearError(el, errEl) {
+        if (!el) return;
+        el.classList.remove("ring-2", "ring-red-400");
+        if (errEl) errEl.textContent = "";
+      }
+      function setError(el, errEl, msg) {
+        if (!el) return;
+        el.classList.add("ring-2", "ring-red-400");
+        if (errEl) errEl.textContent = msg;
+      }
+      function validate() {
+        let ok = true;
+        clearError(nameEl, errName);
+        clearError(emailEl, errEmail);
+        clearError(msgEl, errMsg);
+        const name = nameEl?.value?.trim() || "";
+        const email = emailEl?.value?.trim() || "";
+        const message = msgEl?.value?.trim() || "";
+        if (!name) {
+          setError(nameEl, errName, "Please enter your name.");
+          ok = false;
         }
-        function hide(node) {
-          if (!node) return;
-          node.classList.add("notify-hide");
-          setTimeout(() => node.remove(), 300);
-        }
-        window.showNotification = function (
-          message,
-          type = "info",
-          ttl = 4000,
-        ) {
-          try {
-            const node = makeNode(message, type);
-            root.appendChild(node);
-            // Auto-hide
-            setTimeout(() => hide(node), ttl);
-          } catch (e) {
-            console.warn("showNotification error", e);
-          }
-        };
-      })();
-    </script>
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const form = document.querySelector("form");
-        const nameEl = document.getElementById("name");
-        const emailEl = document.getElementById("email");
-        const msgEl = document.getElementById("message");
-        const errName = document.getElementById("err-name");
-        const errEmail = document.getElementById("err-email");
-        const errMsg = document.getElementById("err-message");
-        const sendBtn = document.getElementById("send-btn");
-        function clearError(el, errEl) {
-          if (!el) return;
-          el.classList.remove("ring-2", "ring-red-400");
-          if (errEl) errEl.textContent = "";
-        }
-        function setError(el, errEl, msg) {
-          if (!el) return;
-          el.classList.add("ring-2", "ring-red-400");
-          if (errEl) errEl.textContent = msg;
-        }
-        function validate() {
-          let ok = true;
-          clearError(nameEl, errName);
-          clearError(emailEl, errEmail);
-          clearError(msgEl, errMsg);
-          const name = nameEl?.value?.trim() || "";
-          const email = emailEl?.value?.trim() || "";
-          const message = msgEl?.value?.trim() || "";
-          if (!name) {
-            setError(nameEl, errName, "Please enter your name.");
+        if (!email) {
+          setError(emailEl, errEmail, "Please enter your email.");
+          ok = false;
+        } else {
+          const re = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+          if (!re.test(email)) {
+            setError(emailEl, errEmail, "Please enter a valid email.");
             ok = false;
           }
-          if (!email) {
-            setError(emailEl, errEmail, "Please enter your email.");
-            ok = false;
-          } else {
-            const re = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-            if (!re.test(email)) {
-              setError(emailEl, errEmail, "Please enter a valid email.");
-              ok = false;
-            }
-          }
-          if (!message) {
-            setError(msgEl, errMsg, "Please enter a message.");
-            ok = false;
-          }
-          return ok;
         }
-        [nameEl, emailEl, msgEl].forEach((el) => {
-          if (!el) return;
-          el.addEventListener("input", () => {
-            if (el.id === "name") clearError(nameEl, errName);
-            if (el.id === "email") clearError(emailEl, errEmail);
-            if (el.id === "message") clearError(msgEl, errMsg);
-          });
+        if (!message) {
+          setError(msgEl, errMsg, "Please enter a message.");
+          ok = false;
+        }
+        return ok;
+      }
+      [nameEl, emailEl, msgEl].forEach((el) => {
+        if (!el) return;
+        el.addEventListener("input", () => {
+          if (el.id === "name") clearError(nameEl, errName);
+          if (el.id === "email") clearError(emailEl, errEmail);
+          if (el.id === "message") clearError(msgEl, errMsg);
         });
-        if (!form) return;
-        form.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          if (!validate()) {
-            const firstErr = document.querySelector(".ring-red-400");
-            if (firstErr && typeof firstErr.focus === "function")
-              firstErr.focus();
+      });
+      if (!form) return;
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!validate()) {
+          const firstErr = document.querySelector(".ring-red-400");
+          if (firstErr && typeof firstErr.focus === "function")
+            firstErr.focus();
+          return;
+        }
+        const name = nameEl?.value || "";
+        const email = emailEl?.value || "";
+        const message = msgEl?.value || "";
+        try {
+          sendBtn?.setAttribute("disabled", "true");
+          const bodyToSend = { name, email, message };
+          const resp = await fetch("/api/send-message", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(bodyToSend),
+          });
+          const text = await resp.text().catch(() => "");
+          let json;
+          try {
+            json = text ? JSON.parse(text) : null;
+          } catch (err) {
+            json = { parseError: String(err), raw: text };
+          }
+          if (!resp.ok) {
+            let detail = "";
+            if (json && typeof json === "object" && "error" in json) {
+              const errVal = json.error;
+              if (typeof errVal === "string") detail = errVal;
+            }
+            if (!detail && resp.status === 404) {
+              detail = "Endpoint not found. Check deployment output settings.";
+            }
+            const msg = detail
+              ? `Failed to send message: ${detail}`
+              : `Failed to send message. (${resp.status})`;
+            if (window.showNotification) window.showNotification(msg, "error");
+            else alert(msg);
+            sendBtn?.removeAttribute("disabled");
             return;
           }
-          const name = nameEl?.value || "";
-          const email = emailEl?.value || "";
-          const message = msgEl?.value || "";
-          try {
-            sendBtn?.setAttribute("disabled", "true");
-            const bodyToSend = { name, email, message };
-            const resp = await fetch("/api/send-message", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              body: JSON.stringify(bodyToSend),
-            });
-            const text = await resp.text().catch(() => "");
-            let json;
-            try {
-              json = text ? JSON.parse(text) : null;
-            } catch (err) {
-              json = { parseError: String(err), raw: text };
-            }
-            if (!resp.ok) {
-              const msg = "Failed to send message. Please try again.";
-              if (window.showNotification)
-                window.showNotification(msg, "error");
-              else alert(msg);
-              sendBtn?.removeAttribute("disabled");
-              return;
-            }
-            const okMsg = "Message sent successfully!";
-            if (window.showNotification)
-              window.showNotification(okMsg, "success");
-            else alert(okMsg);
-            form.reset();
-          } catch (error) {
-            console.error("Error sending message:", error);
-            const errMsgStr = "Failed to send message. Please try again.";
-            if (window.showNotification)
-              window.showNotification(errMsgStr, "error");
-            else alert(errMsgStr);
-          } finally {
-            sendBtn?.removeAttribute("disabled");
-          }
-        });
-      });
-    </script>
-    <script>
-      // Function to get caret coordinates (adapted from textarea-caret-position technique)
-      function getCaretCoordinates(element) {
-        const position = element.selectionStart;
-        const div = document.createElement("div");
-        const span = document.createElement("span");
-        const style = getComputedStyle(element);
-        const props = [
-          "direction",
-          "boxSizing",
-          "width",
-          "height",
-          "overflowX",
-          "overflowY",
-          "borderTopWidth",
-          "borderRightWidth",
-          "borderBottomWidth",
-          "borderLeftWidth",
-          "paddingTop",
-          "paddingRight",
-          "paddingBottom",
-          "paddingLeft",
-          "fontStyle",
-          "fontVariant",
-          "fontWeight",
-          "fontStretch",
-          "fontSize",
-          "fontSizeAdjust",
-          "lineHeight",
-          "fontFamily",
-          "textAlign",
-          "textTransform",
-          "textIndent",
-          "textDecoration",
-          "letterSpacing",
-          "wordSpacing",
-        ];
-        // Mirror styles
-        div.style.position = "absolute";
-        div.style.top = "-9999px";
-        div.style.left = "-9999px";
-        div.style.whiteSpace = "pre-wrap";
-        div.style.wordWrap = "break-word";
-        props.forEach((prop) => {
-          div.style[prop] = style[prop];
-        });
-        if (element.tagName === "INPUT") {
-          div.style.whiteSpace = "nowrap";
-        } else {
-          // Textarea
-          div.style.height = `${element.clientHeight}px`;
-          div.style.overflowY = "scroll";
-          div.style.scrollTop = element.scrollTop;
+          const okMsg = "Message sent successfully!";
+          if (window.showNotification)
+            window.showNotification(okMsg, "success");
+          else alert(okMsg);
+          form.reset();
+        } catch (error) {
+          console.error("Error sending message:", error);
+          const errMsgStr = "Failed to send message. Please try again.";
+          if (window.showNotification)
+            window.showNotification(errMsgStr, "error");
+          else alert(errMsgStr);
+        } finally {
+          sendBtn?.removeAttribute("disabled");
         }
-        div.style.width = `${element.clientWidth}px`;
-        // Copy text up to caret
-        div.textContent = element.value.substring(0, position);
-        div.appendChild(span);
-        span.textContent = element.value.substring(position) || ".";
-        document.body.appendChild(div);
-        const spanRect = span.getBoundingClientRect();
-        const divRect = div.getBoundingClientRect();
-        const coordinates = {
-          top: spanRect.top - divRect.top,
-          left: spanRect.left - divRect.left,
-          height: spanRect.height,
-        };
-        document.body.removeChild(div);
-        return coordinates;
+      });
+    });
+  </script>
+  <script>
+    // Mirror input styles to compute the caret position for the fake underscore.
+    function getCaretCoordinates(element) {
+      const position = element.selectionStart;
+      const div = document.createElement("div");
+      const span = document.createElement("span");
+      const style = getComputedStyle(element);
+      const props = [
+        "direction",
+        "boxSizing",
+        "width",
+        "height",
+        "overflowX",
+        "overflowY",
+        "borderTopWidth",
+        "borderRightWidth",
+        "borderBottomWidth",
+        "borderLeftWidth",
+        "paddingTop",
+        "paddingRight",
+        "paddingBottom",
+        "paddingLeft",
+        "fontStyle",
+        "fontVariant",
+        "fontWeight",
+        "fontStretch",
+        "fontSize",
+        "fontSizeAdjust",
+        "lineHeight",
+        "fontFamily",
+        "textAlign",
+        "textTransform",
+        "textIndent",
+        "textDecoration",
+        "letterSpacing",
+        "wordSpacing",
+      ];
+      div.style.position = "absolute";
+      div.style.top = "-9999px";
+      div.style.left = "-9999px";
+      div.style.whiteSpace = "pre-wrap";
+      div.style.wordWrap = "break-word";
+      props.forEach((prop) => {
+        div.style[prop] = style[prop];
+      });
+      if (element.tagName === "INPUT") {
+        div.style.whiteSpace = "nowrap";
+      } else {
+        div.style.height = `${element.clientHeight}px`;
+        div.style.overflowY = "scroll";
+        div.style.scrollTop = element.scrollTop;
       }
-      // Setup for each field
-      document.addEventListener("DOMContentLoaded", () => {
-        const fields = [
-          {
-            input: document.getElementById("name"),
-            caret: document.getElementById("fake-caret-name"),
-          },
-          {
-            input: document.getElementById("email"),
-            caret: document.getElementById("fake-caret-email"),
-          },
-          {
-            input: document.getElementById("message"),
-            caret: document.getElementById("fake-caret-message"),
-          },
-        ];
-        // Preload the bell sound (create once for all fields)
-        const bellAudio = new Audio('/terminal_bell.mp3');
-        bellAudio.preload = 'auto';  // Optional: Preload for faster first play
+      div.style.width = `${element.clientWidth}px`;
+      div.textContent = element.value.substring(0, position);
+      div.appendChild(span);
+      span.textContent = element.value.substring(position) || ".";
+      document.body.appendChild(div);
+      const spanRect = span.getBoundingClientRect();
+      const divRect = div.getBoundingClientRect();
+      const coordinates = {
+        top: spanRect.top - divRect.top,
+        left: spanRect.left - divRect.left,
+        height: spanRect.height,
+      };
+      document.body.removeChild(div);
+      return coordinates;
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+      const fields = [
+        {
+          input: document.getElementById("name"),
+          caret: document.getElementById("fake-caret-name"),
+        },
+        {
+          input: document.getElementById("email"),
+          caret: document.getElementById("fake-caret-email"),
+        },
+        {
+          input: document.getElementById("message"),
+          caret: document.getElementById("fake-caret-message"),
+        },
+      ];
+      const bellAudio = new Audio("/terminal_bell.mp3");
+      bellAudio.preload = "auto";
 
-        fields.forEach(({ input, caret }) => {
-          if (!input || !caret) return;
-          const updateCaret = () => {
-            const coords = getCaretCoordinates(input);
-            caret.style.top = `${coords.top + input.scrollTop}px`; // Adjust for scroll in textarea
-            caret.style.left = `${coords.left}px`;
-            caret.classList.remove("hidden");
-          };
-          // Events to update position
-          input.addEventListener("focus", updateCaret);
-          input.addEventListener("input", updateCaret);
-          input.addEventListener("keyup", updateCaret);
-          input.addEventListener("click", updateCaret);
-          input.addEventListener("scroll", updateCaret); // For textarea scrolling
-          // New: Play bell on backspace when empty
-          input.addEventListener("keydown", (event) => {
-            if (event.key === 'Backspace' && input.value.length === 0) {
-              bellAudio.play().catch((err) => console.warn('Audio play failed:', err));  // Handle autoplay policies
-            }
-            updateCaret();  // Still update caret position
-          });
-          // Hide on blur
-          input.addEventListener("blur", () => {
-            caret.classList.add("hidden");
-          });
+      fields.forEach(({ input, caret }) => {
+        if (!input || !caret) return;
+        const updateCaret = () => {
+          const coords = getCaretCoordinates(input);
+          caret.style.top = `${coords.top + input.scrollTop}px`;
+          caret.style.left = `${coords.left}px`;
+          caret.classList.remove("hidden");
+        };
+        input.addEventListener("focus", updateCaret);
+        input.addEventListener("input", updateCaret);
+        input.addEventListener("keyup", updateCaret);
+        input.addEventListener("click", updateCaret);
+        input.addEventListener("scroll", updateCaret);
+        // Play a terminal bell on backspace when the field is empty.
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Backspace" && input.value.length === 0) {
+            bellAudio
+              .play()
+              .catch((err) => console.warn("Audio play failed:", err));
+          }
+          updateCaret();
+        });
+        input.addEventListener("blur", () => {
+          caret.classList.add("hidden");
         });
       });
-    </script>
-  </div>
-</div>
+    });
+  </script>
+</WindowCard>

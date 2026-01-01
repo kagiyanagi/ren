@@ -2,7 +2,7 @@
 import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
-import vercelAdapter from "@astrojs/vercel/serverless";
+import vercelAdapter from "@astrojs/vercel";
 import path from "path";
 import tailwind from "@astrojs/tailwind";
 
