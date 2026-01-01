@@ -1,6 +1,26 @@
 export const SITE_TITLE = "Aman";
 export const SITE_DESCRIPTION =
   `A personal portfolio built with Astro and Tailwind CSS — take a look!`.trim();
+export const SEO_KEYWORDS = [
+  "Aman",
+  "Aqua",
+  "Kagiyanagi",
+  "Ren Kagiyanagi",
+  "Ren",
+  "Aman Kagiyanagi",
+  "Aqua Ren",
+  "Kagiyanagi Ren",
+  "Aman Aqua",
+  "Aman portfolio",
+  "Aman developer",
+  "Aman engineer",
+  "Aman web developer",
+  "Aman Android",
+  "Aman graphics",
+  "Aman GFX",
+  "Aman India",
+].join(", ");
+export const TWITTER_HANDLE = "@kagiyanagi";
 
 export const KNOWN_TECH =
   `Astro,Tailwind CSS,JavaScript,Python,CSS,HTML,C,C++,Bash,VIM,React,Git,Photoshop,Figma,Pandas,NumPy,Hyprland, Davinci Resolve, Docker`.split(

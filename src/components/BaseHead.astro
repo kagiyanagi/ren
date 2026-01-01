@@ -14,7 +14,40 @@ const {
   description = ABOUT_ME,
   image = "/image.jpg",
 } = Astro.props;
-import { ABOUT_ME, SITE_TITLE } from "@/consts";
+import {
+  ABOUT_ME,
+  KNOWN_TECH,
+  NAV_LINKS,
+  SEO_KEYWORDS,
+  SITE_TITLE,
+  TWITTER_HANDLE,
+} from "@/consts";
+const socialLinks = NAV_LINKS.map((link) => link.href)
+  .filter(Boolean)
+  .map((href) => (href?.startsWith("http") ? href : `https:${href}`));
+const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: SITE_TITLE,
+    alternateName: ["Aqua", "Kagiyanagi", "Ren"],
+    description: ABOUT_ME,
+    url: canonicalURL,
+    sameAs: socialLinks,
+    knowsAbout: KNOWN_TECH,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_TITLE,
+    url: Astro.site,
+    description,
+    publisher: {
+      "@type": "Person",
+      name: SITE_TITLE,
+    },
+  },
+];
 ---
 
 <meta charset="utf-8" />
@@ -38,17 +71,32 @@ import { ABOUT_ME, SITE_TITLE } from "@/consts";
 <title>{title}</title>
 <meta name="title" content={title} />
 <meta name="description" content={description} />
+<meta name="keywords" content={SEO_KEYWORDS} />
+<meta name="author" content={SITE_TITLE} />
+<meta
+  name="robots"
+  content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+/>
+<meta name="application-name" content={SITE_TITLE} />
+<meta name="theme-color" content="#000000" />
 
 <meta property="og:type" content="website" />
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={new URL(image, Astro.url)} />
+<meta property="og:site_name" content={SITE_TITLE} />
+<meta property="og:locale" content="en_US" />
 
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
+<meta property="twitter:site" content={TWITTER_HANDLE} />
+
+<script type="application/ld+json">
+  {JSON.stringify(structuredData)}
+</script>
 
 <ClientRouter />
