@@ -20,12 +20,18 @@
         "notify-item pointer-events-auto max-w-xl w-full mx-auto rounded-md px-4 py-2 mb-2 text-sm shadow-lg flex items-center gap-3 justify-between";
       el.setAttribute("role", "status");
 
-      const bg = type === "success" ? "bg-emerald-600" : "bg-rose-600";
+      const bgMap = {
+        success: "bg-emerald-600",
+        error: "bg-rose-600",
+        warning: "bg-amber-500",
+        info: "bg-slate-700",
+      };
+      const bg = bgMap[type] || bgMap.info;
       el.classList.add(...bg.split(" "));
 
       const txt = document.createElement("div");
       txt.textContent = message;
-      txt.className = "text-white";
+      txt.className = "text-white notify-text";
 
       const close = document.createElement("button");
       close.className = "text-white/80 hover:text-white ml-4";
@@ -51,9 +57,11 @@
         const node = makeNode(message, type);
         root.appendChild(node);
         setTimeout(() => hide(node), ttl);
+        return node;
       } catch (e) {
         console.warn("showNotification error", e);
       }
+      return null;
     };
   })();
 </script>

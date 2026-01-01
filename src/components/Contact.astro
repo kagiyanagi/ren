@@ -78,6 +78,14 @@ const errorClass = "text-red-400 text-sm mt-1";
       const errEmail = document.getElementById("err-email");
       const errMsg = document.getElementById("err-message");
       const sendBtn = document.getElementById("send-btn");
+      // Prevent rapid repeat sends from the same session.
+      const COOLDOWN_MS = 30_000;
+      const COOLDOWN_NOTICE_MS = 5_000;
+      let cooldownUntil = 0;
+      let cooldownNotice = null;
+      let cooldownNoticeTimer = null;
+      let sending = false;
+      const defaultBtnLabel = sendBtn?.textContent?.trim() || "Send Message";
       function clearError(el, errEl) {
         if (!el) return;
         el.classList.remove("ring-2", "ring-red-400");
@@ -124,9 +132,58 @@ const errorClass = "text-red-400 text-sm mt-1";
           if (el.id === "message") clearError(msgEl, errMsg);
         });
       });
+      function getSecondsRemaining() {
+        return Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000));
+      }
+      function setCooldown(durationMs = COOLDOWN_MS) {
+        const now = Date.now();
+        cooldownUntil = Math.max(cooldownUntil, now + durationMs);
+      }
+      function showCooldownNotice() {
+        if (!window.showNotification) return;
+        if (cooldownNoticeTimer) {
+          clearInterval(cooldownNoticeTimer);
+          cooldownNoticeTimer = null;
+        }
+        if (cooldownNotice && document.body.contains(cooldownNotice)) {
+          cooldownNotice.remove();
+        }
+        const seconds = getSecondsRemaining();
+        cooldownNotice = window.showNotification(
+          `Please wait ${seconds}s before sending another message.`,
+          "warning",
+          COOLDOWN_NOTICE_MS,
+        );
+        if (!cooldownNotice) return;
+        const startedAt = Date.now();
+        cooldownNoticeTimer = setInterval(() => {
+          if (!document.body.contains(cooldownNotice)) {
+            clearInterval(cooldownNoticeTimer);
+            cooldownNoticeTimer = null;
+            return;
+          }
+          const textEl = cooldownNotice.querySelector(".notify-text");
+          if (textEl) {
+            const remaining = getSecondsRemaining();
+            textEl.textContent =
+              remaining > 0
+                ? `Please wait ${remaining}s before sending another message.`
+                : "You can send another message now.";
+          }
+          if (Date.now() - startedAt >= COOLDOWN_NOTICE_MS) {
+            clearInterval(cooldownNoticeTimer);
+            cooldownNoticeTimer = null;
+          }
+        }, 1000);
+      }
       if (!form) return;
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (cooldownUntil && Date.now() < cooldownUntil) {
+          showCooldownNotice();
+          return;
+        }
+        if (sending) return;
         if (!validate()) {
           const firstErr = document.querySelector(".ring-red-400");
           if (firstErr && typeof firstErr.focus === "function")
@@ -137,7 +194,9 @@ const errorClass = "text-red-400 text-sm mt-1";
         const email = emailEl?.value || "";
         const message = msgEl?.value || "";
         try {
+          sending = true;
           sendBtn?.setAttribute("disabled", "true");
+          if (sendBtn) sendBtn.textContent = "Sending...";
           const bodyToSend = { name, email, message };
           const resp = await fetch("/api/send-message", {
             method: "POST",
@@ -163,12 +222,17 @@ const errorClass = "text-red-400 text-sm mt-1";
             if (!detail && resp.status === 404) {
               detail = "Endpoint not found. Check deployment output settings.";
             }
+            if (resp.status === 429) {
+              const retryAfter = Number(resp.headers.get("Retry-After") || 10);
+              setCooldown(retryAfter * 1000);
+              showCooldownNotice();
+              return;
+            }
             const msg = detail
               ? `Failed to send message: ${detail}`
               : `Failed to send message. (${resp.status})`;
             if (window.showNotification) window.showNotification(msg, "error");
             else alert(msg);
-            sendBtn?.removeAttribute("disabled");
             return;
           }
           const okMsg = "Message sent successfully!";
@@ -176,6 +240,7 @@ const errorClass = "text-red-400 text-sm mt-1";
             window.showNotification(okMsg, "success");
           else alert(okMsg);
           form.reset();
+          setCooldown(COOLDOWN_MS);
         } catch (error) {
           console.error("Error sending message:", error);
           const errMsgStr = "Failed to send message. Please try again.";
@@ -183,7 +248,11 @@ const errorClass = "text-red-400 text-sm mt-1";
             window.showNotification(errMsgStr, "error");
           else alert(errMsgStr);
         } finally {
-          sendBtn?.removeAttribute("disabled");
+          sending = false;
+          if (sendBtn) {
+            sendBtn.removeAttribute("disabled");
+            sendBtn.textContent = defaultBtnLabel;
+          }
         }
       });
     });

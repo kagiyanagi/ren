@@ -17,6 +17,7 @@ type ValidatedInput = {
 const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
 } as const;
+const RATE_LIMIT_WINDOW_MS = 30_000;
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -37,6 +38,27 @@ export const POST: APIRoute = async ({ request }) => {
         },
       );
     }
+
+    // Basic in-memory rate limit to slow repeated submits.
+    const rateLimit = getRateLimitStore();
+    const clientId = getClientId(request);
+    const now = Date.now();
+    const lastSeen = rateLimit.get(clientId);
+    if (lastSeen && now - lastSeen < RATE_LIMIT_WINDOW_MS) {
+      const retryMs = RATE_LIMIT_WINDOW_MS - (now - lastSeen);
+      const retryAfter = Math.ceil(retryMs / 1000);
+      return json(
+        429,
+        {
+          ok: false,
+          error: `Please wait ${retryAfter}s before sending another message.`,
+        },
+        {
+          "Retry-After": String(retryAfter),
+        },
+      );
+    }
+    rateLimit.set(clientId, now);
 
     const raw = await safeReadText(request, 32_768); // 32KB max
     if (!raw) {
@@ -131,6 +153,26 @@ function readTelegramEnv(): { token: string; chatId: string } {
   }
 
   return { token, chatId };
+}
+
+function getRateLimitStore(): Map<string, number> {
+  const global = globalThis as typeof globalThis & {
+    __sendMessageRateLimit?: Map<string, number>;
+  };
+  if (!global.__sendMessageRateLimit) {
+    global.__sendMessageRateLimit = new Map();
+  }
+  return global.__sendMessageRateLimit;
+}
+
+function getClientId(request: Request): string {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) return forwardedFor.split(",")[0]?.trim() || "unknown";
+  return (
+    request.headers.get("x-real-ip")?.trim() ||
+    request.headers.get("cf-connecting-ip")?.trim() ||
+    "local"
+  );
 }
 
 function validateIncomingBody(
