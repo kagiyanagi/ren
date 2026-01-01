@@ -5,84 +5,129 @@ import "@/styles/global.css";
 ---
 
 <section
-    class="bg-black h-screen w-screen text-white place-items-center flex
-    justify-center"
+    class="bg-black min-h-screen w-screen text-white flex flex-col justify-center items-center relative overflow-hidden"
 >
+    <div class="hero-bg absolute inset-0 hero-bg-animate z-0"></div>
+
     <div
-        class="hero-bg hidden md:block h-screen hero-bg-animate absolute top-0"
+        class="grid place-items-center gap-6 px-4 z-10 relative w-full max-w-4xl"
     >
-    </div>
-    <div class="grid place-items-center">
-        <Image
-            alt="Profile illustration"
-            src={MainImage}
-            class="brightness-200 max-w-xs sm:max-w-sm md:max-w-md object-contain invert rounded-3xl"
-        />
-        <h1 class="text-3xl font-extrabold font-pixel">404, Page not found :'(</h1>
-        <a class="text-xl font-extrabold" href="/"
-            >You might wanna check home page. <span class="blinking-cursor"
-                >_</span
-            ></a
+        <div class="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl">
+            <Image
+                alt="Profile illustration"
+                src={MainImage}
+                class="brightness-150 invert transition-transform duration-300 hover:scale-105 object-contain w-full h-auto"
+            />
+        </div>
+
+        <h1
+            class="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-extrabold font-pixel tracking-tight text-center animate-fade-in-up"
         >
+            404, Page not found :'(
+        </h1>
+
+        <a
+            href="/"
+            class="text-base sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-center hover:underline underline-offset-4 transition-all duration-300 flex items-center justify-center gap-1 group"
+        >
+            You might wanna check home page.
+            <span class="blinking-cursor inline-block">_</span>
+            <span
+                class="ml-2 text-sm opacity-70 group-hover:opacity-100 transition-opacity"
+                >←</span
+            >
+        </a>
     </div>
-    <style>
-        .hero-bg {
-            width: 100%;
-            height: 100%;
-        }
-        .blinking-cursor {
-            display: inline-block;
-            color: white;
-            font-weight: bold;
-            animation: blink 1s step-end infinite;
-            vertical-align: middle;
-        }
-
-        @keyframes blink {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0;
-            }
-        }
-    </style>
-    <script is:inline>
-        const heroBg = document.querySelector(".hero-bg-animate");
-
-        function generateBinary() {
-            if (!heroBg) return;
-
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-
-            // Adjust these based on your font (monospace avg char width ~0.6em, line height 1)
-            const fontSizePx = parseFloat(getComputedStyle(heroBg).fontSize); // Gets current CSS font-size in px
-            const charWidth = fontSizePx * 0.6; // Approx for monospace '0' or '1'
-            const lineHeight = fontSizePx * 1.0; // Matches CSS line-height: 1
-
-            const charsPerLine = Math.ceil(width / charWidth) + 10; // Extra for safety/margins
-            const linesNeeded = Math.ceil(height / lineHeight) + 5; // Extra for overflow/scroll
-
-            let totalChars = charsPerLine * linesNeeded;
-            totalChars = Math.min(totalChars, 50000); // Cap for perf (adjust if needed)
-
-            let binaryText = "";
-            for (let i = 0; i < totalChars; i++) {
-                binaryText += Math.floor(Math.random() * 2).toString();
-            }
-
-            heroBg.textContent = binaryText;
-        }
-
-        // Initial generation
-        generateBinary();
-
-        // Animate every 300ms
-        setInterval(generateBinary, 300);
-
-        // Regenerate on resize
-        window.addEventListener("resize", generateBinary);
-    </script>
 </section>
+<style>
+    .hero-bg {
+        width: 100%;
+        height: 100vh;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        line-height: 1.2;
+        opacity: 0.04;
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        pointer-events: none;
+        user-select: none;
+        overflow: hidden;
+    }
+
+    .hero-bg-animate {
+        transition: opacity 0.15s ease;
+    }
+
+    .hero-bg-animate.fade {
+        opacity: 0.015;
+    }
+
+    .blinking-cursor {
+        display: inline-block;
+        color: white;
+        font-weight: bold;
+        animation: blink 1s step-end infinite;
+        vertical-align: middle;
+    }
+
+    @keyframes blink {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0;
+        }
+    }
+
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fade-in-up 0.8s ease-out forwards;
+    }
+</style>
+<script is:inline>
+    const heroBg = document.querySelector(".hero-bg-animate");
+
+    function generateBinary() {
+        if (!heroBg) return;
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Adjust these based on your font (monospace avg char width ~0.6em, line height 1)
+        const fontSizePx = parseFloat(getComputedStyle(heroBg).fontSize); // Gets current CSS font-size in px
+        const charWidth = fontSizePx * 0.6; // Approx for monospace '0' or '1'
+        const lineHeight = fontSizePx * 1.0; // Matches CSS line-height: 1
+
+        const charsPerLine = Math.ceil(width / charWidth) + 10; // Extra for safety/margins
+        const linesNeeded = Math.ceil(height / lineHeight) + 5; // Extra for overflow/scroll
+
+        let totalChars = charsPerLine * linesNeeded;
+        totalChars = Math.min(totalChars, 50000); // Cap for perf (adjust if needed)
+
+        let binaryText = "";
+        for (let i = 0; i < totalChars; i++) {
+            binaryText += Math.floor(Math.random() * 2).toString();
+        }
+
+        heroBg.textContent = binaryText;
+    }
+
+    // Initial generation
+    generateBinary();
+
+    // Animate every 300ms
+    setInterval(generateBinary, 300);
+
+    // Regenerate on resize
+    window.addEventListener("resize", generateBinary);
+</script>
