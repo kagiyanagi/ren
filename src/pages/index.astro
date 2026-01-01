@@ -34,7 +34,10 @@ try {
 
 <Layout title="Aman - Engineer, GFX designer and High school student">
   <Hero />
-  <Section title="About me" className={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center"}>
+  <Section
+    title="About me"
+    className={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center"}
+  >
     <div
       class="w-full grid place-items-center gap-4 grid-cols-1 sm:grid-cols-2"
     >
@@ -65,12 +68,14 @@ try {
         </p>
         <p class="opacity-95House">
           Web development, IoT, Machine learning, Linux(Arch btw). I'm a big fan
-          of anime (MAL link in navbar) and music, which both inspire my
-          creativity. Core Android development: I love building custom ROMs and
-          kernels. I've archived everything on my
-          <a
-            class="text-teal-400 hover:text-teal-500 underline transition-all"
-            href="https://t.me/rensakashvani">Telegram channel</a
+          of anime (<a
+            class="underline transition-all"
+            href="https://myanimelist.net/profile/kagiyanagi">MAL link</a
+          >) and music, which both inspire my creativity. Core Android
+          development: I love building custom ROMs and kernels. I've archived
+          everything on my
+          <a class="underline transition-all" href="https://t.me/rensakashvani"
+            >Telegram channel</a
           >
         </p>
         <p class="opacity-95">
@@ -144,31 +149,31 @@ try {
     title="Contact me"
     className={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center"}
   >
-      <div
-        class="w-full grid place-items-center grid-cols-1 sm:grid-cols-2"
-      >
-      <div class="flex flex-col  items-center">
+    <div
+      class="w-full grid place-items-center grid-cols-1 sm:grid-cols-2 gap-12 sm:gap-0"
+    >
+      <div class="flex flex-col items-center">
         <Image
           alt="FBFBFBFBFBFB massage by Moeka Kiryū from Steins;Gate. GIF on http://anime.en.utf8art.com/arc/steins_gate_11.html"
           src={House}
           class="brightness-200 max-w-xs sm:max-w-sm"
         />
       </div>
-        <div class="w-full max-w-xl">
-          <Contact />
+      <div class="w-full max-w-xl">
+        <Contact />
       </div>
     </div>
   </Section>
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('a').forEach((link) => {
-      // Only apply to links with an href (skip empty or invalid ones)
-      if (link.href) {
-        link.target = '_blank';
-        // Optional: Add rel="noopener noreferrer" for security (prevents new tab from accessing the original page)
-        link.rel = 'noopener noreferrer';
-      }
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll("a").forEach((link) => {
+        // Only apply to links with an href (skip empty or invalid ones)
+        if (link.href) {
+          link.target = "_blank";
+          // Optional: Add rel="noopener noreferrer" for security (prevents new tab from accessing the original page)
+          link.rel = "noopener noreferrer";
+        }
+      });
     });
-  });
-</script>
+  </script>
 </Layout>
