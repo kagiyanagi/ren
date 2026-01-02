@@ -9,7 +9,7 @@ import tailwind from "@astrojs/tailwind";
 // https://astro.build/config
 export default defineConfig({
   output: "static",
-  site: "https://aquakun.vercel.app/",
+  site: "https://kagiyanagi.vercel.app/",
   adapter: vercelAdapter(),
   integrations: [mdx(), sitemap(), tailwind()],
   markdown: {

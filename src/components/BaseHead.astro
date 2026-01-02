@@ -32,7 +32,7 @@ const structuredData = [
     name: SITE_TITLE,
     alternateName: ["Aqua", "Kagiyanagi", "Ren"],
     description: ABOUT_ME,
-    url: canonicalURL,
+    url: canonicalURL.href,
     sameAs: socialLinks,
     knowsAbout: KNOWN_TECH,
   },
@@ -40,7 +40,7 @@ const structuredData = [
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_TITLE,
-    url: Astro.site,
+    url: Astro.site?.href,
     description,
     publisher: {
       "@type": "Person",
@@ -95,8 +95,6 @@ const structuredData = [
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
 <meta property="twitter:site" content={TWITTER_HANDLE} />
 
-<script type="application/ld+json">
-  {JSON.stringify(structuredData)}
-</script>
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
 <ClientRouter />
