@@ -1,6 +1,6 @@
 export const SITE_TITLE = "Aman";
 export const SITE_DESCRIPTION =
-  `A personal portfolio built with Astro and Tailwind CSS — take a look!`.trim();
+  `Aman (kagiyanagi is my username) - I am a self-taught engineer from india. Explore my portfolio!`.trim();
 export const SEO_KEYWORDS = [
   "Aman",
   "Aqua",
