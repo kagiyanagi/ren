@@ -1,6 +1,6 @@
 export const SITE_TITLE = "Aman";
 export const SITE_DESCRIPTION =
-  `- I am a self-taught engineer and a tech lover from india, and this is my portfolio showcasing me and my projects. `.trim();
+  `I am a self-taught engineer and a tech lover from india, and this is my portfolio showcasing me and my projects.`.trim();
 export const SEO_KEYWORDS = [
   "Aman",
   "Aqua",
