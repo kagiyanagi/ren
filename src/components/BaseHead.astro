@@ -11,11 +11,11 @@ interface Props {
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const {
   title = SITE_TITLE,
-  description = ABOUT_ME,
+  description = SITE_DESCRIPTION,
   image = "/image.jpg",
 } = Astro.props;
 import {
-  ABOUT_ME,
+  SITE_DESCRIPTION,
   KNOWN_TECH,
   NAV_LINKS,
   SEO_KEYWORDS,
@@ -31,7 +31,7 @@ const structuredData = [
     "@type": "Person",
     name: SITE_TITLE,
     alternateName: ["Aqua", "Kagiyanagi", "Ren"],
-    description: ABOUT_ME,
+    description: SITE_DESCRIPTION,
     url: canonicalURL.href,
     sameAs: socialLinks,
     knowsAbout: KNOWN_TECH,
