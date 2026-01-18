@@ -1,6 +1,6 @@
 export const SITE_TITLE = "Aman";
 export const SITE_DESCRIPTION =
-  `I am a self-taught engineer and a tech lover from india, and this is my portfolio showcasing me and my projects.`.trim();
+  `Hi, I'm Aman, known as Ren Kagiyanagi or some other aliases on the internet. I am a self-taught engineer (kind of) and a tech enthusiast from India. Explore my portfolio built which showcases my projects and skills.`.trim();
 export const SEO_KEYWORDS = [
   "Aman",
   "Aqua",
