@@ -72,8 +72,8 @@ export const NAV_LINKS: Array<{ title: string; href?: string }> = [
     href: "//youtube.com/@kagiyanagi",
   },
   {
-    title: "MyAnimeList",
-    href: "//myanimelist.net/profile/kagiyanagi",
+    title: "Ko-fi",
+    href: "//ko-fi.com/kagiyanagi",
   },
   {
     title: "X",
