@@ -22,7 +22,11 @@ Package manager is **pnpm** (Node 22 per `engines`). There is **no test suite or
 
 ### Single source of truth: `src/consts.ts`
 
-Every piece of user-facing content (`SITE_TITLE`, `SITE_DESCRIPTION`, `SEO_KEYWORDS`, `NAV_LINKS`, `KNOWN_TECH`, `PROJECTS`, `ABOUT_ME`, `GITHUB_USERNAME`, `GITHUB_REPO`, `TWITTER_HANDLE`) is exported from here. Templates only reference these — do not hardcode strings in pages or components. SEO output (`BaseHead.astro` JSON-LD) depends on this file being accurate.
+Every piece of user-facing content (`SITE_TITLE`, `SITE_DESCRIPTION`, `SEO_KEYWORDS`, `NAV_LINKS`, `KNOWN_TECH`, `PROJECTS`, `USE_PINNED_REPOS`, `ABOUT_ME`, `GITHUB_USERNAME`, `GITHUB_REPO`, `TWITTER_HANDLE`) is exported from here. Templates only reference these — do not hardcode strings in pages or components. SEO output (`BaseHead.astro` JSON-LD) depends on this file being accurate.
+
+### Pinned-repos fetcher (`src/lib/github.ts`)
+
+When `USE_PINNED_REPOS` is true, `src/pages/index.astro` calls `fetchPinnedProjects(GITHUB_USERNAME)` at build time. The helper tries GraphQL first (requires `GITHUB_TOKEN`), falls back to scraping `github.com/<user>` HTML + per-repo REST enrichment, and returns `null` on any failure so the page falls back to the static `PROJECTS` array. Date format matches the existing entries (`MMM D, YYYY`). Titles are derived from `nameWithOwner` by title-casing the repo name. If a build needs to be deterministic, set `USE_PINNED_REPOS = false`.
 
 ### Layout / page composition
 

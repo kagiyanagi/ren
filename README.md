@@ -44,12 +44,13 @@ There is no automated test suite. The only quality gates are `astro check` and P
 
 Only the contact form needs configuration. Copy `.env.example` to `.env` and fill in:
 
-| Variable             | Required | Purpose                                                  |
-| -------------------- | -------- | -------------------------------------------------------- |
-| `TELEGRAM_BOT_TOKEN` | yes      | Bot token from [@BotFather](https://t.me/BotFather).     |
-| `TELEGRAM_CHAT_ID`   | yes      | Your numeric Telegram chat id (where messages get sent). |
+| Variable             | Required | Purpose                                                                                                                                                                                                                     |
+| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TELEGRAM_BOT_TOKEN` | yes      | Bot token from [@BotFather](https://t.me/BotFather).                                                                                                                                                                        |
+| `TELEGRAM_CHAT_ID`   | yes      | Your numeric Telegram chat id (where messages get sent).                                                                                                                                                                    |
+| `GITHUB_TOKEN`       | optional | Used at build time by `src/lib/github.ts` for the GraphQL pinned-repos path. Any classic token with no scopes works — pinned repo metadata is public. Without it, the build falls back to scraping the public profile page. |
 
-The legacy aliases `BOT_TOKEN` / `CHAT_ID` are also accepted as fallbacks (see `src/lib/env.ts`), but new deployments should use the canonical names above.
+The legacy aliases `BOT_TOKEN` / `CHAT_ID` are also accepted as fallbacks for the Telegram values (see `src/lib/env.ts`), but new deployments should use the canonical names above.
 
 For Vercel, add both variables under **Project → Settings → Environment Variables** for the `Production` and `Preview` environments.
 
@@ -89,7 +90,8 @@ src/
 ├── layouts/
 │   └── Layout.astro         — shared HTML shell (head + nav + main + footer + notification root)
 ├── lib/
-│   └── env.ts               — typed reader for Telegram secrets (single source of truth)
+│   ├── env.ts               — typed reader for Telegram secrets (single source of truth)
+│   └── github.ts            — build-time fetcher for GitHub pinned repos (GraphQL → HTML scrape → null)
 ├── pages/
 │   ├── 404.astro            — uses <Layout>, hard-codes /index and a JS-driven refresh
 │   ├── api/
@@ -125,7 +127,17 @@ Everything user-facing is driven from this file. Edit here, not in templates:
 - `PROJECTS` → renders project cards.
 - `ABOUT_ME` → reserved for the about copy.
 - `NAV_LINKS` → top-nav entries. External hrefs use protocol-relative `//host/path` or `https://…`.
-- `GITHUB_USERNAME` / `GITHUB_REPO` → used by the index page's last-commit fetch and the footer link.
+- `GITHUB_USERNAME` / `GITHUB_REPO` → used by the index page's last-commit fetch, the footer link, and the pinned-repos fetcher.
+- `USE_PINNED_REPOS` → when `true` (default), the homepage fetches your GitHub pinned repos at build time and renders them instead of the static `PROJECTS` list. Flip to `false` if you'd rather hand-curate.
+
+### Pinned repos as projects
+
+When `USE_PINNED_REPOS` is enabled, `src/lib/github.ts` runs at build time and tries two paths:
+
+1. **GraphQL** — only used if `GITHUB_TOKEN` is set. One request returns all pinned repos with title, description, and `pushedAt`.
+2. **HTML scrape + REST** — no token required. Parses `github.com/${GITHUB_USERNAME}` to find pinned repo slugs, then hits `api.github.com/repos/{owner}/{name}` per repo for description and timestamp.
+
+If either path produces at least one project, those replace `PROJECTS`. If both fail (network error, GitHub HTML reshuffle, repo not found), the static `PROJECTS` constant is used as a safety net. Updating your pinned repos on GitHub is enough — no commits, no redeploys until the next site rebuild.
 
 ### Layout flow
 
@@ -185,7 +197,7 @@ Everything user-facing is driven from this file. Edit here, not in templates:
 
 If you're forking this:
 
-1. Replace everything in `src/consts.ts` (title, description, keywords, projects, nav, GitHub repo).
+1. Replace everything in `src/consts.ts` (title, description, keywords, projects, nav, GitHub repo). Set `USE_PINNED_REPOS = false` if you want to keep a static project list; leave it `true` and just pin your repos on GitHub otherwise.
 2. Swap `src/assets/{hero,villain,house}.{png,gif}` with your own images (same import paths).
 3. Update `site:` in `astro.config.mjs` to your own URL.
 4. Replace `public/favicon.ico`, `public/muichiro.{ico,svg}`, `public/image.jpg`.
