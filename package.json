@@ -1,22 +1,28 @@
 {
-  "name": "token-theme",
+  "name": "ren",
+  "description": "Personal portfolio for kagiyanagi — Astro + Tailwind, terminal/CRT theme.",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "vercel-build": "pnpm run build",
     "preview": "astro preview",
     "astro": "astro",
-    "fmt": "prettier . -w"
+    "check": "astro check",
+    "fmt": "prettier . -w",
+    "fmt:check": "prettier . --check"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.0.3",
-    "@astrojs/rss": "^4.0.11",
-    "@astrojs/sitemap": "^3.2.1",
-    "@astrojs/tailwind": "^5.1.4",
-    "@astrojs/vercel": "^9.0.2",
-    "astro": "^5.1.3",
+    "@astrojs/mdx": "^5.0.4",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.2",
+    "@astrojs/tailwind": "^6.0.2",
+    "@astrojs/vercel": "^10.0.6",
+    "astro": "^6.3.1",
     "sharp": "^0.34.1",
     "tailwindcss": "^3.4.17"
   },
@@ -24,9 +30,5 @@
     "@tailwindcss/typography": "^0.5.16",
     "prettier": "^3.4.2",
     "prettier-plugin-astro": "^0.14.1"
-  }
-
-  ,"engines": {
-    "node": "22.x"
   }
 }

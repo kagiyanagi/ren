@@ -6,10 +6,9 @@ import ProjectCard from "@/components/ProjectCard.astro";
 import Layout from "@/layouts/Layout.astro";
 import Contact from "@/components/Contact.astro";
 import { Image } from "astro:assets";
-import VillainImg from "@/villain.png";
-import House from "@/house.gif";
-import { KNOWN_TECH, PROJECTS } from "@/consts";
-const GITHUB_REPO = "kagiyanagi/ren";
+import VillainImg from "@/assets/villain.png";
+import House from "@/assets/house.gif";
+import { KNOWN_TECH, PROJECTS, GITHUB_REPO } from "@/consts";
 let commitISO = null;
 try {
   const res = await fetch(
@@ -158,10 +157,17 @@ try {
   </Section>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      const origin = window.location.origin;
       document.querySelectorAll("a").forEach((link) => {
-        if (link.href) {
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
+        if (!link.href) return;
+        try {
+          const url = new URL(link.href, origin);
+          if (url.origin !== origin) {
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+          }
+        } catch {
+          /* invalid href — leave alone */
         }
       });
     });
