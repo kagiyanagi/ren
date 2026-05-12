@@ -27,7 +27,21 @@ export const KNOWN_TECH =
     ",",
   );
 
-export const PROJECTS = [
+// Toggle: when true, the homepage fetches pinned repos from
+// https://github.com/${GITHUB_USERNAME} at build time and renders them
+// instead of the static PROJECTS list below. PROJECTS is still used as a
+// fallback if the fetch fails (network error, GitHub HTML change, etc.).
+// Forkers who'd rather hand-curate their projects can flip this to false.
+export const USE_PINNED_REPOS = true;
+
+export type Project = {
+  title: string;
+  href: string;
+  date: string;
+  description: string;
+};
+
+export const PROJECTS: readonly Project[] = [
   {
     title: "C2Fetch",
     href: "https://github.com/kagiyanagi/c2fetch",
@@ -54,7 +68,7 @@ export const PROJECTS = [
     date: "May 14, 2024",
     description: "My First Cpp Game Tic Tac Toe.",
   },
-] as const;
+];
 export const ABOUT_ME =
   `I'm a self-taught engineer from India, currently in high school. My interests cover web development, Android (core), low-level systems, graphic design, IoT, and machine learning. I also enjoy anime and music, which inspire my creative work — I'm committed to continuous learning and building projects that matter.`.trim();
 export const GITHUB_USERNAME = "kagiyanagi";

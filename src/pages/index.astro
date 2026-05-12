@@ -8,7 +8,22 @@ import Contact from "@/components/Contact.astro";
 import { Image } from "astro:assets";
 import VillainImg from "@/assets/villain.png";
 import House from "@/assets/house.gif";
-import { KNOWN_TECH, PROJECTS, GITHUB_REPO } from "@/consts";
+import {
+  KNOWN_TECH,
+  PROJECTS,
+  GITHUB_REPO,
+  GITHUB_USERNAME,
+  USE_PINNED_REPOS,
+  type Project,
+} from "@/consts";
+import { fetchPinnedProjects } from "@/lib/github";
+
+let projects: readonly Project[] = PROJECTS;
+if (USE_PINNED_REPOS) {
+  const pinned = await fetchPinnedProjects(GITHUB_USERNAME);
+  if (pinned?.length) projects = pinned;
+}
+
 let commitISO = null;
 try {
   const res = await fetch(
@@ -133,7 +148,7 @@ try {
     className={"bg-gradient-to-b from-black/70 from-[5%] to-black via-black max-w-screen-2xl mx-auto items-center mb-12"}
   >
     <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-      {PROJECTS.map((project) => <ProjectCard {...project} />)}
+      {projects.map((project) => <ProjectCard {...project} />)}
     </div>
   </Section>
   <Section
