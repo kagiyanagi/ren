@@ -44,11 +44,12 @@ There is no automated test suite. The only quality gates are `astro check` and P
 
 Only the contact form needs configuration. Copy `.env.example` to `.env` and fill in:
 
-| Variable             | Required | Purpose                                                                                                                                                                                                                     |
-| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TELEGRAM_BOT_TOKEN` | yes      | Bot token from [@BotFather](https://t.me/BotFather).                                                                                                                                                                        |
-| `TELEGRAM_CHAT_ID`   | yes      | Your numeric Telegram chat id (where messages get sent).                                                                                                                                                                    |
-| `GITHUB_TOKEN`       | optional | Used at build time by `src/lib/github.ts` for the GraphQL pinned-repos path. Any classic token with no scopes works — pinned repo metadata is public. Without it, the build falls back to scraping the public profile page. |
+| Variable                   | Required | Purpose                                                                                                                                                                                                                       |
+| -------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TELEGRAM_BOT_TOKEN`       | yes      | Bot token from [@BotFather](https://t.me/BotFather).                                                                                                                                                                          |
+| `TELEGRAM_CHAT_ID`         | yes      | Your numeric Telegram chat id (where messages get sent).                                                                                                                                                                      |
+| `GITHUB_TOKEN`             | optional | Used at build time by `src/lib/github.ts` for the GraphQL pinned-repos path. Any classic token with no scopes works — pinned repo metadata is public. Without it, the build falls back to scraping the public profile page.   |
+| `GOOGLE_SITE_VERIFICATION` | optional | The `content` value from Google Search Console's "HTML tag" method. When set, `BaseHead.astro` emits a `<meta name="google-site-verification">` tag at build time. Set this in Vercel env vars to avoid committing the token. |
 
 The legacy aliases `BOT_TOKEN` / `CHAT_ID` are also accepted as fallbacks for the Telegram values (see `src/lib/env.ts`), but new deployments should use the canonical names above.
 
