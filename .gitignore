@@ -1,12 +1,10 @@
 # build output
 dist/
-# generated types
 .astro/
 .vercel/
 
 # dependencies
 node_modules/
-package-log.json
 
 # logs
 npm-debug.log*
@@ -14,16 +12,16 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-
-# environment variables
-.env
-.env.production
-
-# macOS-specific files
-.DS_Store
-
-# jetbrains setting folder
-.idea/
+# lockfiles from other package managers
 package-lock.json
+yarn.lock
 
-.env*.local
+# environment
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/

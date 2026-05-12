@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { readTelegramConfig } from "@/lib/env";
 
 export const prerender = false;
 
@@ -18,52 +19,45 @@ const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
 } as const;
 const RATE_LIMIT_WINDOW_MS = 30_000;
+const MAX_BODY_BYTES = 32_768;
+const MAX_NAME_LEN = 80;
+const MAX_EMAIL_LEN = 254;
+const MAX_MESSAGE_LEN = 4000;
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const env = readTelegramEnv();
+    const env = readTelegramConfig();
 
     const contentType = request.headers.get("content-type") ?? "";
-    const isJson = contentType.toLowerCase().includes("application/json");
-
-    if (!isJson) {
+    if (!contentType.toLowerCase().includes("application/json")) {
       return json(
         415,
-        {
-          ok: false,
-          error: "Unsupported Media Type. Please send application/json.",
-        },
-        {
-          "Accept-Post": "application/json",
-        },
+        { ok: false, error: "Unsupported Media Type. Send application/json." },
+        { "Accept-Post": "application/json" },
       );
     }
 
-    // Basic in-memory rate limit to slow repeated submits.
     const rateLimit = getRateLimitStore();
     const clientId = getClientId(request);
     const now = Date.now();
     const lastSeen = rateLimit.get(clientId);
     if (lastSeen && now - lastSeen < RATE_LIMIT_WINDOW_MS) {
-      const retryMs = RATE_LIMIT_WINDOW_MS - (now - lastSeen);
-      const retryAfter = Math.ceil(retryMs / 1000);
+      const retryAfter = Math.ceil(
+        (RATE_LIMIT_WINDOW_MS - (now - lastSeen)) / 1000,
+      );
       return json(
         429,
         {
           ok: false,
           error: `Please wait ${retryAfter}s before sending another message.`,
         },
-        {
-          "Retry-After": String(retryAfter),
-        },
+        { "Retry-After": String(retryAfter) },
       );
     }
     rateLimit.set(clientId, now);
 
-    const raw = await safeReadText(request, 32_768); // 32KB max
-    if (!raw) {
-      return json(400, { ok: false, error: "Empty request body." });
-    }
+    const raw = await safeReadText(request, MAX_BODY_BYTES);
+    if (!raw) return json(400, { ok: false, error: "Empty request body." });
 
     let parsed: unknown;
     try {
@@ -73,13 +67,9 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const validated = validateIncomingBody(parsed);
-    if (!validated.ok) {
-      return json(400, { ok: false, error: validated.error });
-    }
+    if (!validated.ok) return json(400, { ok: false, error: validated.error });
 
-    const { name, email, message } = validated.value;
-
-    const text = formatTelegramMessage({ name, email, message });
+    const text = formatTelegramMessage(validated.value);
 
     const telegramResp = await fetch(
       `https://api.telegram.org/bot${env.token}/sendMessage`,
@@ -94,75 +84,29 @@ export const POST: APIRoute = async ({ request }) => {
       },
     );
 
-    // Avoid echoing Telegram responses directly to the client.
     if (!telegramResp.ok) {
-      const details = await safeReadText(telegramResp, 8_192);
-      return json(502, {
-        ok: false,
-        error: "Failed to deliver message.",
-        upstream: {
-          status: telegramResp.status,
-          body: details || null,
-        },
-      });
+      // Do not echo upstream details to the client to avoid leaking config.
+      console.error(
+        "[send-message] Telegram delivery failed",
+        telegramResp.status,
+        await safeReadText(telegramResp, 8_192).catch(() => ""),
+      );
+      return json(502, { ok: false, error: "Failed to deliver message." });
     }
 
     return json(200, { ok: true });
   } catch (err) {
-    return json(500, { ok: false, error: errorMessage(err) });
+    console.error("[send-message] Unexpected error", err);
+    return json(500, { ok: false, error: "Internal server error." });
   }
 };
 
-function readTelegramEnv(): { token: string; chatId: string } {
-  // Astro dev exposes .env via import.meta.env; fall back to process.env at runtime.
-  const metaEnv = import.meta.env as Record<string, string | undefined>;
-  const env = process.env as Record<string, string | undefined>;
-
-  const token =
-    metaEnv.BOT_TOKEN?.trim() ??
-    metaEnv.TELEGRAM_BOT_TOKEN?.trim() ??
-    metaEnv.TELEGRAM_TOKEN?.trim() ??
-    metaEnv.TG_BOT_TOKEN?.trim() ??
-    env.BOT_TOKEN?.trim() ??
-    env.TELEGRAM_BOT_TOKEN?.trim() ??
-    env.TELEGRAM_TOKEN?.trim() ??
-    env.TG_BOT_TOKEN?.trim() ??
-    "";
-  const chatId =
-    metaEnv.CHAT_ID?.trim() ??
-    metaEnv.TELEGRAM_CHAT_ID?.trim() ??
-    metaEnv.TELEGRAM_CHATID?.trim() ??
-    metaEnv.TELEGRAM_BOT_CHAT_ID?.trim() ??
-    metaEnv.TG_CHAT_ID?.trim() ??
-    env.CHAT_ID?.trim() ??
-    env.TELEGRAM_CHAT_ID?.trim() ??
-    env.TELEGRAM_CHATID?.trim() ??
-    env.TELEGRAM_BOT_CHAT_ID?.trim() ??
-    env.TG_CHAT_ID?.trim() ??
-    "";
-
-  if (!token || !chatId) {
-    // Safe to return to the client: it does not include secrets.
-    throw new Error(
-      "Server is not configured: missing TELEGRAM_TOKEN/BOT_TOKEN and/or TELEGRAM_CHAT_ID/CHAT_ID.",
-    );
-  }
-
-  if (!token.includes(":")) {
-    throw new Error("Server is not configured: Telegram token looks invalid.");
-  }
-
-  return { token, chatId };
-}
-
 function getRateLimitStore(): Map<string, number> {
-  const global = globalThis as typeof globalThis & {
+  const g = globalThis as typeof globalThis & {
     __sendMessageRateLimit?: Map<string, number>;
   };
-  if (!global.__sendMessageRateLimit) {
-    global.__sendMessageRateLimit = new Map();
-  }
-  return global.__sendMessageRateLimit;
+  if (!g.__sendMessageRateLimit) g.__sendMessageRateLimit = new Map();
+  return g.__sendMessageRateLimit;
 }
 
 function getClientId(request: Request): string {
@@ -181,9 +125,7 @@ function validateIncomingBody(
   if (!body || typeof body !== "object") {
     return { ok: false, error: "Request body must be a JSON object." };
   }
-
   const b = body as IncomingBody;
-
   const name = normalizeString(b.name);
   const email = normalizeString(b.email);
   const message = normalizeString(b.message);
@@ -191,15 +133,13 @@ function validateIncomingBody(
   if (!name) return { ok: false, error: "Name is required." };
   if (!email) return { ok: false, error: "Email is required." };
   if (!message) return { ok: false, error: "Message is required." };
-
-  if (name.length > 80) return { ok: false, error: "Name is too long." };
-  if (email.length > 254) return { ok: false, error: "Email is too long." };
-  if (message.length > 4000)
+  if (name.length > MAX_NAME_LEN)
+    return { ok: false, error: "Name is too long." };
+  if (email.length > MAX_EMAIL_LEN)
+    return { ok: false, error: "Email is too long." };
+  if (message.length > MAX_MESSAGE_LEN)
     return { ok: false, error: "Message is too long." };
-
-  if (!isValidEmail(email)) {
-    return { ok: false, error: "Email is invalid." };
-  }
+  if (!isValidEmail(email)) return { ok: false, error: "Email is invalid." };
 
   return { ok: true, value: { name, email, message } };
 }
@@ -214,10 +154,9 @@ function isValidEmail(email: string): boolean {
 }
 
 function formatTelegramMessage(input: ValidatedInput): string {
-  const safeName = clampForTelegram(input.name, 200);
-  const safeEmail = clampForTelegram(input.email, 300);
-  const safeMessage = clampForTelegram(input.message, 3500);
-
+  const safeName = clamp(input.name, 200);
+  const safeEmail = clamp(input.email, 300);
+  const safeMessage = clamp(input.message, 3500);
   return [
     "📬 New Message from Contact Form",
     "",
@@ -229,26 +168,21 @@ function formatTelegramMessage(input: ValidatedInput): string {
   ].join("\n");
 }
 
-function clampForTelegram(text: string, maxLen: number): string {
-  if (text.length <= maxLen) return text;
-  return text.slice(0, Math.max(0, maxLen - 1)) + "…";
+function clamp(text: string, maxLen: number): string {
+  return text.length <= maxLen
+    ? text
+    : text.slice(0, Math.max(0, maxLen - 1)) + "…";
 }
 
 async function safeReadText(
   input: Request | Response,
   maxBytes: number,
 ): Promise<string> {
-  // Hard cap request size to avoid abuse.
   const buf = await input.arrayBuffer().catch(() => null);
   if (!buf) return "";
-
   const view = new Uint8Array(buf);
   if (view.byteLength === 0) return "";
-
-  if (view.byteLength > maxBytes) {
-    throw new Error("Request body is too large.");
-  }
-
+  if (view.byteLength > maxBytes) throw new Error("Request body is too large.");
   return new TextDecoder("utf-8", { fatal: false }).decode(view);
 }
 
@@ -259,14 +193,6 @@ function json(
 ): Response {
   return new Response(JSON.stringify(payload), {
     status,
-    headers: {
-      ...JSON_HEADERS,
-      ...(extraHeaders ?? {}),
-    },
+    headers: { ...JSON_HEADERS, ...(extraHeaders ?? {}) },
   });
-}
-
-function errorMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  return String(err);
 }

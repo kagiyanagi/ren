@@ -1,58 +1,47 @@
 ---
-import { Image } from "astro:assets";
-import MainImage from "@/miku.png";
-import "@/styles/global.css";
-import BinaryBackground from "@/components/BinaryBackground.astro";
+import Layout from "@/layouts/Layout.astro";
 ---
 
-<section
-  class="bg-black min-h-[100svh] w-full text-white flex flex-col justify-center items-center relative overflow-hidden"
->
-  <BinaryBackground className="absolute inset-0 z-0" />
-
-  <div
-    class="grid place-items-center gap-6 px-4 z-10 relative w-full max-w-4xl"
+<Layout title="404 — Not Found">
+  <section
+    class="bg-black min-h-[100svh] w-full text-white flex items-center justify-center relative overflow-hidden px-4 sm:px-6"
   >
-    <div class="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl">
-      <Image
-        alt="Profile illustration"
-        src={MainImage}
-        class="brightness-150 invert transition-transform duration-300 hover:scale-105 object-contain w-full h-auto"
-      />
-    </div>
-
-    <h1
-      class="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-extrabold font-pixel tracking-tight text-center animate-fade-in-up"
-    >
-      404, Page not found :'(
-    </h1>
-
-    <a
-      href="/"
-      class="text-base sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-center hover:underline underline-offset-4 transition-all duration-300 flex items-center justify-center gap-1 group"
-    >
-      You might wanna check home page.
-      <span class="blinking-cursor inline-block">_</span>
-      <span
-        class="ml-2 text-sm opacity-70 group-hover:opacity-100 transition-opacity"
-        >←</span
-      >
-    </a>
-  </div>
-</section>
-<style>
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fade-in-up {
-    animation: fade-in-up 0.8s ease-out forwards;
-  }
-</style>
+    <main class="w-full max-w-[640px] text-center space-y-4 sm:space-y-6">
+      <h1 class="text-center">
+        <span
+          class="bg-white text-black px-4 py-1 inline-block text-lg sm:text-xl"
+        >
+          Error - 404
+        </span>
+      </h1>
+      <p class="text-sm sm:text-base">An error has occurred. To continue:</p>
+      <p class="text-sm sm:text-base leading-relaxed">
+        * Return to the homepage.<br />
+        * Send me an email about this error and try later.
+      </p>
+      <nav class="text-sm sm:text-base" aria-label="Not found navigation">
+        <a
+          href="/"
+          class="px-2 py-1 hover:bg-white hover:text-black focus-visible:bg-white focus-visible:text-black focus-visible:outline-none"
+        >
+          index
+        </a>
+        <span class="mx-1 text-white/70">|</span>
+        <a
+          id="refresh-link"
+          href="/"
+          class="px-2 py-1 hover:bg-white hover:text-black focus-visible:bg-white focus-visible:text-black focus-visible:outline-none"
+        >
+          refresh
+        </a>
+      </nav>
+    </main>
+  </section>
+  <script>
+    const refresh = document.getElementById("refresh-link");
+    refresh?.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.reload();
+    });
+  </script>
+</Layout>

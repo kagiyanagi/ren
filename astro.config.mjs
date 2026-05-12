@@ -1,15 +1,15 @@
 // @ts-check
 import { defineConfig } from "astro/config";
+import path from "node:path";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
-import vercelAdapter from "@astrojs/vercel";
-import path from "path";
 import tailwind from "@astrojs/tailwind";
+import vercelAdapter from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://kagiyanagi.vercel.app",
   output: "static",
-  site: "https://kagiyanagi.vercel.app/",
   adapter: vercelAdapter(),
   integrations: [mdx(), sitemap(), tailwind()],
   markdown: {

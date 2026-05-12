@@ -58,6 +58,7 @@ export const PROJECTS = [
 export const ABOUT_ME =
   `I'm a self-taught engineer from India, currently in high school. My interests cover web development, Android (core), low-level systems, graphic design, IoT, and machine learning. I also enjoy anime and music, which inspire my creative work — I'm committed to continuous learning and building projects that matter.`.trim();
 export const GITHUB_USERNAME = "kagiyanagi";
+export const GITHUB_REPO = `${GITHUB_USERNAME}/ren`;
 export const NAV_LINKS: Array<{ title: string; href?: string }> = [
   {
     title: "Telegram",

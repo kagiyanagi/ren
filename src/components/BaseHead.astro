@@ -1,52 +1,55 @@
 ---
 import { ClientRouter } from "astro:transitions";
 import "@/styles/global.css";
+import {
+  SITE_DESCRIPTION,
+  KNOWN_TECH,
+  NAV_LINKS,
+  SEO_KEYWORDS,
+  SITE_TITLE,
+  TWITTER_HANDLE,
+} from "@/consts";
 
 interface Props {
-    title: string;
-    description?: string;
-    image?: string;
+  title?: string;
+  description?: string;
+  image?: string;
 }
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const {
-    title = SITE_TITLE,
-    description = SITE_DESCRIPTION,
-    image = "/image.jpg",
+  title = SITE_TITLE,
+  description = SITE_DESCRIPTION,
+  image = "/image.jpg",
 } = Astro.props;
-import {
-    SITE_DESCRIPTION,
-    KNOWN_TECH,
-    NAV_LINKS,
-    SEO_KEYWORDS,
-    SITE_TITLE,
-    TWITTER_HANDLE,
-} from "@/consts";
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
 const socialLinks = NAV_LINKS.map((link) => link.href)
-    .filter(Boolean)
-    .map((href) => (href?.startsWith("http") ? href : `https:${href}`));
+  .filter((href): href is string => Boolean(href))
+  .map((href) => (href.startsWith("http") ? href : `https:${href}`));
+
 const structuredData = [
-    {
-        "@context": "https://schema.org",
-        "@type": "Person",
-        name: SITE_TITLE,
-        alternateName: ["Aqua", "Kagiyanagi", "Ren"],
-        description: SITE_DESCRIPTION,
-        url: canonicalURL.href,
-        sameAs: socialLinks,
-        knowsAbout: KNOWN_TECH,
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: SITE_TITLE,
+    alternateName: ["Aqua", "Kagiyanagi", "Ren"],
+    description: SITE_DESCRIPTION,
+    url: canonicalURL.href,
+    sameAs: socialLinks,
+    knowsAbout: KNOWN_TECH,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_TITLE,
+    url: Astro.site?.href,
+    description,
+    publisher: {
+      "@type": "Person",
+      name: SITE_TITLE,
     },
-    {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: SITE_TITLE,
-        url: Astro.site?.href,
-        description,
-        publisher: {
-            "@type": "Person",
-            name: SITE_TITLE,
-        },
-    },
+  },
 ];
 ---
 
@@ -59,11 +62,11 @@ const structuredData = [
 <link rel="sitemap" href="/sitemap-index.xml" />
 
 <link
-    rel="preload"
-    href="/fonts/VCRosdNEUE.ttf"
-    as="font"
-    type="font/ttf"
-    crossorigin
+  rel="preload"
+  href="/fonts/VCRosdNEUE.ttf"
+  as="font"
+  type="font/ttf"
+  crossorigin
 />
 
 <link rel="canonical" href={canonicalURL} />
@@ -74,8 +77,8 @@ const structuredData = [
 <meta name="keywords" content={SEO_KEYWORDS} />
 <meta name="author" content={SITE_TITLE} />
 <meta
-    name="robots"
-    content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  name="robots"
+  content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
 />
 <meta name="application-name" content={SITE_TITLE} />
 <meta name="theme-color" content="#000000" />
