@@ -24,6 +24,13 @@ const {
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
+// Read at build time from Vercel env vars (or local .env). Empty means skip.
+const googleSiteVerification = (
+  import.meta.env.GOOGLE_SITE_VERIFICATION ??
+  process.env.GOOGLE_SITE_VERIFICATION ??
+  ""
+).trim();
+
 const socialLinks = NAV_LINKS.map((link) => link.href)
   .filter((href): href is string => Boolean(href))
   .map((href) => (href.startsWith("http") ? href : `https:${href}`));
@@ -68,6 +75,12 @@ const structuredData = [
   type="font/ttf"
   crossorigin
 />
+
+{
+  googleSiteVerification && (
+    <meta name="google-site-verification" content={googleSiteVerification} />
+  )
+}
 
 <link rel="canonical" href={canonicalURL} />
 
