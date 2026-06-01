@@ -141,13 +141,34 @@ img {
 }
 
 .terminal-glow {
-  box-shadow: 0 0 990px rgba(255, 255, 255, 0.1);
+  position: relative;
+  isolation: isolate;
   border-radius: 18px;
-  background: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.02) 100%
+}
+
+.terminal-glow::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  width: clamp(20rem, 92vw, 46rem);
+  height: clamp(12rem, 48svh, 26rem);
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.018) 0%,
+    rgba(255, 255, 255, 0.028) 18%,
+    rgba(255, 255, 255, 0.055) 42%,
+    rgba(255, 255, 255, 0.026) 66%,
+    rgba(255, 255, 255, 0) 84%
   );
+  transform: translate3d(-50%, -50%, 0);
+}
+
+.terminal-glow > * {
+  position: relative;
+  z-index: 1;
 }
 
 .blinking-cursor {

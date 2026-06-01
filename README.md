@@ -1,4 +1,4 @@
-# ren — kagiyanagi's portfolio
+# ren - kagiyanagi's portfolio
 
 A static, terminal/CRT-themed personal portfolio built with Astro and Tailwind CSS, deployed on Vercel.
 
@@ -48,7 +48,7 @@ Only the contact form needs configuration. Copy `.env.example` to `.env` and fil
 | -------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `TELEGRAM_BOT_TOKEN`       | yes      | Bot token from [@BotFather](https://t.me/BotFather).                                                                                                                                                                          |
 | `TELEGRAM_CHAT_ID`         | yes      | Your numeric Telegram chat id (where messages get sent).                                                                                                                                                                      |
-| `GITHUB_TOKEN`             | optional | Used at build time by `src/lib/github.ts` for the GraphQL pinned-repos path. Any classic token with no scopes works — pinned repo metadata is public. Without it, the build falls back to scraping the public profile page.   |
+| `GITHUB_TOKEN`             | optional | Used at build time by `src/lib/github.ts` for the GraphQL pinned-repos path. Any classic token with no scopes works - pinned repo metadata is public. Without it, the build falls back to scraping the public profile page.   |
 | `GOOGLE_SITE_VERIFICATION` | optional | The `content` value from Google Search Console's "HTML tag" method. When set, `BaseHead.astro` emits a `<meta name="google-site-verification">` tag at build time. Set this in Vercel env vars to avoid committing the token. |
 
 The legacy aliases `BOT_TOKEN` / `CHAT_ID` are also accepted as fallbacks for the Telegram values (see `src/lib/env.ts`), but new deployments should use the canonical names above.
@@ -65,7 +65,7 @@ Astro loads `.env`, `.env.production`, `.env.development`, and `.env.*.local`. A
 
 ### Rendering model
 
-- `astro.config.mjs` sets `output: "static"` — the site is fully prerendered…
+- `astro.config.mjs` sets `output: "static"` - the site is fully prerendered…
 - …with **one exception**: `src/pages/api/send-message.ts` declares `export const prerender = false`, which is why the project ships the Vercel adapter. Vercel deploys that single file as a serverless function and serves everything else as static assets.
 
 ### Source layout
@@ -73,51 +73,51 @@ Astro loads `.env`, `.env.production`, `.env.development`, and `.env.*.local`. A
 ```
 src/
 ├── assets/          # Build-time images (imported via @/assets/*). Astro fingerprints + optimizes these.
-│   ├── hero.png       — used in <Hero>
-│   ├── house.gif      — used in the "Contact me" section
-│   └── villain.png    — used in the "About me" section
+│   ├── hero.png       - used in <Hero>
+│   ├── house.gif      - used in the "Contact me" section
+│   └── villain.png    - used in the "About me" section
 ├── components/      # Astro components, all server-rendered. Per-component <script> tags ship client JS.
-│   ├── BaseHead.astro       — <head> contents, OG/Twitter/JSON-LD, font preload, ClientRouter
-│   ├── BinaryBackground.astro — animated 0/1 field used behind the hero
-│   ├── Breadcrumb.astro     — white "tech" pill
-│   ├── Contact.astro        — contact form, client-side validation, cooldown, fake terminal caret
-│   ├── Footer.astro         — footer with dynamic year
-│   ├── Hero.astro           — landing hero block
-│   ├── Navbar.astro         — top nav, internal vs external link handling, scroll-styled logo
-│   ├── Notification.astro   — global toast root, exposes window.showNotification
-│   ├── ProjectCard.astro    — project tile (composed inside WindowCard)
-│   ├── Section.astro        — titled section wrapper (`<Title />` styling)
-│   └── WindowCard.astro     — "macOS window" frame used by ProjectCard / Contact
+│   ├── BaseHead.astro       - <head> contents, OG/Twitter/JSON-LD, font preload, ClientRouter
+│   ├── BinaryBackground.astro - animated 0/1 field used behind the hero
+│   ├── Breadcrumb.astro     - white "tech" pill
+│   ├── Contact.astro        - contact form, client-side validation, cooldown, fake terminal caret
+│   ├── Footer.astro         - footer with dynamic year
+│   ├── Hero.astro           - landing hero block
+│   ├── Navbar.astro         - top nav, internal vs external link handling, scroll-styled logo
+│   ├── Notification.astro   - global toast root, exposes window.showNotification
+│   ├── ProjectCard.astro    - project tile (composed inside WindowCard)
+│   ├── Section.astro        - titled section wrapper (`<Title />` styling)
+│   └── WindowCard.astro     - "macOS window" frame used by ProjectCard / Contact
 ├── layouts/
-│   └── Layout.astro         — shared HTML shell (head + nav + main + footer + notification root)
+│   └── Layout.astro         - shared HTML shell (head + nav + main + footer + notification root)
 ├── lib/
-│   ├── env.ts               — typed reader for Telegram secrets (single source of truth)
-│   └── github.ts            — build-time fetcher for GitHub pinned repos (GraphQL → HTML scrape → null)
+│   ├── env.ts               - typed reader for Telegram secrets (single source of truth)
+│   └── github.ts            - build-time fetcher for GitHub pinned repos (GraphQL → HTML scrape → null)
 ├── pages/
-│   ├── 404.astro            — uses <Layout>, hard-codes /index and a JS-driven refresh
+│   ├── 404.astro            - uses <Layout>, hard-codes /index and a JS-driven refresh
 │   ├── api/
-│   │   └── send-message.ts  — only dynamic route; rate-limited proxy to Telegram
-│   ├── index.astro          — the entire homepage
-│   └── rss.xml.js           — RSS feed for the `blog` collection (currently empty)
+│   │   └── send-message.ts  - only dynamic route; rate-limited proxy to Telegram
+│   ├── index.astro          - the entire homepage
+│   └── rss.xml.js           - RSS feed for the `blog` collection (currently empty)
 ├── styles/
-│   └── global.css           — fonts, custom cursors, scanline/flicker effects, scrollbar
-├── consts.ts                — site metadata, projects, nav links, GitHub repo
-└── content.config.ts        — defines the `blog` collection (no posts shipped yet)
+│   └── global.css           - fonts, custom cursors, scanline/flicker effects, scrollbar
+├── consts.ts                - site metadata, projects, nav links, GitHub repo
+└── content.config.ts        - defines the `blog` collection (no posts shipped yet)
 
 public/
 ├── cursors/         # Pixel-art cursors used in global.css
 ├── fonts/           # VCR OSD NEUE, RetroByte (preloaded in <head>)
-├── favicon.ico      — actual favicon
-├── muichiro.ico     — alternate favicon
-├── muichiro.svg     — SVG favicon
-├── image.jpg        — default OG/Twitter share image
-├── terminal_bell.mp3 — sound played on backspace in empty input
-└── google5ebaed34e5db2abf.html — Google Search Console verification
+├── favicon.ico      - actual favicon
+├── muichiro.ico     - alternate favicon
+├── muichiro.svg     - SVG favicon
+├── image.jpg        - default OG/Twitter share image
+├── terminal_bell.mp3 - sound played on backspace in empty input
+└── google5ebaed34e5db2abf.html - Google Search Console verification
 ```
 
 ### Path aliasing
 
-`vite.resolve.alias` maps `@/*` → `./src/*`. Always import via the alias (`@/components/...`, `@/lib/env`, `@/assets/...`) — never relative paths.
+`vite.resolve.alias` maps `@/*` → `./src/*`. Always import via the alias (`@/components/...`, `@/lib/env`, `@/assets/...`) - never relative paths.
 
 ### Single source of truth: `src/consts.ts`
 
@@ -135,10 +135,10 @@ Everything user-facing is driven from this file. Edit here, not in templates:
 
 When `USE_PINNED_REPOS` is enabled, `src/lib/github.ts` runs at build time and tries two paths:
 
-1. **GraphQL** — only used if `GITHUB_TOKEN` is set. One request returns all pinned repos with title, description, and `pushedAt`.
-2. **HTML scrape + REST** — no token required. Parses `github.com/${GITHUB_USERNAME}` to find pinned repo slugs, then hits `api.github.com/repos/{owner}/{name}` per repo for description and timestamp.
+1. **GraphQL** - only used if `GITHUB_TOKEN` is set. One request returns all pinned repos with title, description, and `pushedAt`.
+2. **HTML scrape + REST** - no token required. Parses `github.com/${GITHUB_USERNAME}` to find pinned repo slugs, then hits `api.github.com/repos/{owner}/{name}` per repo for description and timestamp.
 
-If either path produces at least one project, those replace `PROJECTS`. If both fail (network error, GitHub HTML reshuffle, repo not found), the static `PROJECTS` constant is used as a safety net. Updating your pinned repos on GitHub is enough — no commits, no redeploys until the next site rebuild.
+If either path produces at least one project, those replace `PROJECTS`. If both fail (network error, GitHub HTML reshuffle, repo not found), the static `PROJECTS` constant is used as a safety net. Updating your pinned repos on GitHub is enough - no commits, no redeploys until the next site rebuild.
 
 ### Layout flow
 
@@ -168,7 +168,7 @@ If either path produces at least one project, those replace `PROJECTS`. If both 
 
 ## Styling
 
-- **Tailwind v3** via `@astrojs/tailwind`, configured in `tailwind.config.mjs` (scans `./src/**/*`). The `@tailwindcss/typography` plugin is loaded but currently unused — left in place for future MDX posts.
+- **Tailwind v3** via `@astrojs/tailwind`, configured in `tailwind.config.mjs` (scans `./src/**/*`). The `@tailwindcss/typography` plugin is loaded but currently unused - left in place for future MDX posts.
 - **Global CSS** in `src/styles/global.css` declares:
   - `@font-face` for `VCR` and `RetroByte` (loaded from `/public/fonts/`).
   - Custom pixel cursors mapped per-element type (body, text inputs, links/buttons).
@@ -189,7 +189,7 @@ If either path produces at least one project, those replace `PROJECTS`. If both 
 ## Security notes
 
 - The `/api/send-message` endpoint is the only attack surface that touches real secrets. It hard-caps body size to 32 KB, requires `application/json`, validates field lengths, and rate-limits per IP.
-- The rate limiter is process-local — on Vercel's serverless runtime, multiple instances do not share state. For stronger protection, swap `getRateLimitStore()` for an external KV.
+- The rate limiter is process-local - on Vercel's serverless runtime, multiple instances do not share state. For stronger protection, swap `getRateLimitStore()` for an external KV.
 - **Never commit `.env`.** The gitignore blocks `.env*` except `.env.example`. If you accidentally commit a token: revoke it via @BotFather first, then rewrite history.
 
 ---

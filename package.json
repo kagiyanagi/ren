@@ -1,6 +1,6 @@
 {
   "name": "ren",
-  "description": "Personal portfolio for kagiyanagi — Astro + Tailwind, terminal/CRT theme.",
+  "description": "Personal portfolio for kagiyanagi - Astro + Tailwind, terminal/CRT theme.",
   "type": "module",
   "version": "0.1.0",
   "private": true,

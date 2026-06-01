@@ -78,7 +78,7 @@ function toProject(repo: RepoMetadata): Project {
   };
 }
 
-// GraphQL path — needs GITHUB_TOKEN. One request returns everything.
+// GraphQL path - needs GITHUB_TOKEN. One request returns everything.
 async function fetchViaGraphQL(username: string): Promise<Project[] | null> {
   const token = readToken();
   if (!token) return null;
