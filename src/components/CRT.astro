@@ -10,7 +10,11 @@
   import { calm, type FxDetail } from "@/lib/fx";
 
   const canvas = document.getElementById("crt") as HTMLCanvasElement;
-  const gl = canvas.getContext("webgl", { alpha: false, antialias: false });
+  const gl = canvas.getContext("webgl", {
+    alpha: false,
+    antialias: false,
+    depth: false,
+  });
 
   const VERT = `attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }`;
 
@@ -33,25 +37,36 @@
 
     vec2 cellOf(vec2 s) { return floor((s + vec2(0.0, uScroll)) / uCell); }
 
-    float ink(vec2 s, float chaos) {
-      vec2 cell = cellOf(s);
-      vec2 f = fract((s + vec2(0.0, uScroll)) / uCell);
+    // Which glyph a cell shows right now.
+    float glyph(vec2 cell, float chaos) {
       float r = hash(cell);
       float rate = mix(0.12, 2.6, r * r * r) + chaos * 9.0 + uModes.x * 7.0;
       float tick = floor(uTime * rate + r * 17.0);
       float idx = step(0.5, hash(cell + tick));
       if (hash(cell - tick * 0.37) < max(chaos, uModes.x))
         idx = 2.0 + floor(hash(cell + tick * 1.3) * (uCount - 2.0));
+      return idx;
+    }
+
+    // Alpha of glyph idx at in-cell position f.
+    float tex(float idx, vec2 f) {
       return texture2D(uAtlas, vec2((idx + f.x) / uCount, f.y)).a;
+    }
+
+    float ink(vec2 s, float chaos) {
+      return tex(glyph(cellOf(s), chaos), fract((s + vec2(0.0, uScroll)) / uCell));
     }
 
     void main() {
       vec2 s = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
 
-      // Horizontal tear, mostly idle until uGlitch spikes.
-      float row = floor(s.y / (14.0 * uScale));
-      float band = step(0.93, hash(vec2(row, floor(uTime * 14.0)))) * uGlitch;
-      s.x += band * (hash(vec2(row, floor(uTime * 31.0))) - 0.5) * 140.0 * uScale;
+      // Horizontal tear, idle until uGlitch spikes.
+      float band = 0.0;
+      if (uGlitch > 0.0) {
+        float row = floor(s.y / (14.0 * uScale));
+        band = step(0.93, hash(vec2(row, floor(uTime * 14.0)))) * uGlitch;
+        s.x += band * (hash(vec2(row, floor(uTime * 31.0))) - 0.5) * 140.0 * uScale;
+      }
 
       vec2 cell = cellOf(s);
       vec2 c = (cell + 0.5) * uCell - vec2(0.0, uScroll);
@@ -63,28 +78,43 @@
       light += smoothstep(0.8, 1.0, w) * 0.1 * uIntensity;
 
       // Matrix rain: per-column falling heads with fading tails.
-      float rows = uRes.y / uCell.y;
-      float colR = hash(vec2(cell.x, 91.7));
-      float head = mod(uTime * mix(5.0, 16.0, colR) + colR * 97.0, rows * 1.7);
-      float dist = head - floor(c.y / uCell.y);
-      float rain = dist < 0.0 ? 0.0 : (dist < 1.0 ? 1.2 : exp(-dist * 0.16) * 0.7);
-      light = mix(light, rain, uModes.x);
+      if (uModes.x > 0.0) {
+        float rows = uRes.y / uCell.y;
+        float colR = hash(vec2(cell.x, 91.7));
+        float head = mod(uTime * mix(5.0, 16.0, colR) + colR * 97.0, rows * 1.7);
+        float dist = head - floor(c.y / uCell.y);
+        float rain = dist < 0.0 ? 0.0 : (dist < 1.0 ? 1.2 : exp(-dist * 0.16) * 0.7);
+        light = mix(light, rain, uModes.x);
+      }
 
       // Alert: pulsing hex grid over everything.
-      vec2 hp = s / (46.0 * uScale);
-      vec2 hr = vec2(1.0, 1.7320508);
-      vec2 ha = mod(hp, hr) - hr * 0.5;
-      vec2 hb = mod(hp - hr * 0.5, hr) - hr * 0.5;
-      vec2 gv = dot(ha, ha) < dot(hb, hb) ? ha : hb;
-      float edge = 0.5 - max(dot(abs(gv), normalize(hr)), abs(gv).x);
-      float grid = smoothstep(0.06, 0.0, edge) * (0.55 + 0.45 * sin(uTime * 7.0 - length(hp) * 0.3));
+      float grid = 0.0;
+      if (uModes.y > 0.0) {
+        vec2 hp = s / (46.0 * uScale);
+        vec2 hr = vec2(1.0, 1.7320508);
+        vec2 ha = mod(hp, hr) - hr * 0.5;
+        vec2 hb = mod(hp - hr * 0.5, hr) - hr * 0.5;
+        vec2 gv = dot(ha, ha) < dot(hb, hb) ? ha : hb;
+        float edge = 0.5 - max(dot(abs(gv), normalize(hr)), abs(gv).x);
+        grid = smoothstep(0.06, 0.0, edge) * (0.55 + 0.45 * sin(uTime * 7.0 - length(hp) * 0.3));
+      }
       light = light * (1.0 + uModes.y * 1.5);
 
       light *= 1.0 - uModes.z * (0.75 - 0.15 * sin(uTime * 1.2));
 
       float ab = (1.0 + band * 8.0 + uModes.y * 3.0) * uScale;
-      vec3 col = vec3(ink(s + vec2(ab, 0.0), band), ink(s, band), ink(s - vec2(ab, 0.0), band)) * light;
-      col += vec3(1.0) * grid * uModes.y * 0.5;
+      vec3 col;
+      if (band > 0.0 || uModes.y > 0.0) {
+        col = vec3(ink(s + vec2(ab, 0.0), band), ink(s, band), ink(s - vec2(ab, 0.0), band));
+      } else {
+        // The usual 1px fringe only ever reaches a neighbour's empty margin,
+        // so this cell's glyph serves all three channels: one lookup, not three.
+        vec2 f = fract((s + vec2(0.0, uScroll)) / uCell);
+        vec2 o = vec2(ab / uCell.x, 0.0);
+        float idx = glyph(cell, 0.0);
+        col = vec3(tex(idx, f + o), tex(idx, f), tex(idx, f - o));
+      }
+      col = col * light + vec3(1.0) * grid * uModes.y * 0.5;
 
       vec2 q = gl_FragCoord.xy / uRes - 0.5;
       col *= 1.0 - dot(q, q) * 0.9;
@@ -175,11 +205,13 @@
     // frames and never back up; a real quality ladder if people complain.
     let scale = Math.min(devicePixelRatio || 1, 1.5);
     let cssCell = 22;
+    let drawnY = NaN; // scrollY at the last draw
     function resize() {
       canvas.width = Math.round(innerWidth * scale);
       canvas.height = Math.round(innerHeight * scale);
       cssCell = Math.min(26, Math.max(18, innerWidth / 60));
       gl!.viewport(0, 0, canvas.width, canvas.height);
+      drawnY = NaN; // resizing clears the canvas: force a draw next frame
     }
     resize();
     addEventListener("resize", () => {
@@ -206,8 +238,11 @@
       const bottom = 1 - (docH - scrollY - innerHeight) / 400;
       const intensity = Math.max(0.3, Math.min(1, Math.max(top, bottom)));
 
-      for (const m of Object.values(modes))
+      for (const m of Object.values(modes)) {
         m[0] += (m[1] - m[0]) * Math.min(1, dt * 3);
+        // Settle exactly, so the shader can skip modes that are off.
+        if (Math.abs(m[1] - m[0]) < 1e-3) m[0] = m[1];
+      }
       glitch = Math.max(0, glitch - dt * 3.5);
       if (!still && t > nextGlitch) {
         glitch = Math.max(glitch, 0.6);
@@ -232,26 +267,32 @@
     }
 
     let raf = 0;
-    function frame() {
+    let drawnAt = 0;
+    function frame(ms: number) {
       raf = requestAnimationFrame(frame);
-      const t = now();
-      const dt = Math.min(0.1, t - last);
-      last = t;
+      const t = ms / 1000;
       // Twenty-ish slow frames in a row: drop resolution once.
-      slow = dt > 0.024 ? slow + 1 : 0;
+      slow = t - last > 0.024 ? slow + 1 : 0;
+      last = t;
       if (slow > 20 && scale > 0.75) {
         scale *= 0.66;
         slow = 0;
         resize();
       }
-      draw(t, dt);
+      // ~30fps is plenty: glyphs flip a few times a second and the light wave
+      // steps a whole cell at a time. Scroll parallax is continuous, so any
+      // frame where the page moved still draws.
+      if (scrollY === drawnY && t - drawnAt < 0.025) return;
+      draw(t, Math.min(0.1, t - drawnAt));
+      drawnAt = t;
+      drawnY = scrollY;
     }
-    frame();
+    raf = requestAnimationFrame(frame);
     document.addEventListener("visibilitychange", () => {
       cancelAnimationFrame(raf);
       if (!document.hidden) {
         last = now();
-        frame();
+        raf = requestAnimationFrame(frame);
       }
     });
   }

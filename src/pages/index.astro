@@ -106,6 +106,7 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
           const el = document.getElementById("lastUpdated");
           const commitISO = el?.dataset?.commit || null;
           const commitTime = commitISO ? new Date(commitISO).getTime() : null;
+          let raf = 0;
 
           function updateSince() {
             if (!el) return;
@@ -130,10 +131,16 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
             const d = Math.floor(diff / 24);
 
             el.textContent = `Last updated: ${d}d ${h}h ${m}m ${s}s ${ms}ms ago`;
-            requestAnimationFrame(updateSince);
+            raf = requestAnimationFrame(updateSince);
           }
 
           updateSince();
+          // Ticks every frame for the milliseconds, but only while on screen.
+          if (el)
+            new IntersectionObserver((entries) => {
+              cancelAnimationFrame(raf);
+              if (entries[entries.length - 1].isIntersecting) updateSince();
+            }).observe(el);
         </script>
       </div>
     </div>
