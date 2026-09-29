@@ -1,6 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import HeroImg from "@/assets/hero.png";
+import HeroBlinkImg from "@/assets/hero-blink.png";
 import { SITE_TITLE, TAGLINES } from "@/consts";
 ---
 
@@ -34,12 +35,19 @@ import { SITE_TITLE, TAGLINES } from "@/consts";
       type="button"
       id="shinji"
       aria-label="Poke Shinji"
-      class="ascii-shade relative block focus-visible:outline-dashed focus-visible:outline-1 focus-visible:outline-white"
+      class="group ascii-shade relative block focus-visible:outline-dashed focus-visible:outline-1 focus-visible:outline-white"
     >
       <Image
         alt="Shinji Ikari from Neon Genesis Evangelion. source:(http://anime.en.utf8art.com/arc/evangelion_28.html)"
         src={HeroImg}
-        class="brightness-200 invert h-full w-auto max-w-full"
+        class="brightness-200 invert h-full w-auto max-w-full group-[.blink]:invisible"
+        loading="eager"
+      />
+      <Image
+        alt=""
+        src={HeroBlinkImg}
+        id="shinji-blink"
+        class="brightness-200 invert absolute inset-0 h-full w-full opacity-0 group-[.blink]:opacity-100"
         loading="eager"
       />
       <span id="shinji-says" class="speech" role="status"></span>
@@ -114,6 +122,24 @@ import { SITE_TITLE, TAGLINES } from "@/consts";
       loop((i + 1) % TAGLINES.length);
     };
     loop(1);
+
+    // Shinji blinks now and then, sometimes twice.
+    const shinji = document.getElementById("shinji")!;
+    const blink = async () => {
+      await sleep(2500 + Math.random() * 4500);
+      const times = Math.random() < 0.25 ? 2 : 1;
+      for (let i = 0; i < times; i++) {
+        shinji.classList.add("blink");
+        await sleep(120);
+        shinji.classList.remove("blink");
+        await sleep(140);
+      }
+      blink();
+    };
+    // Wait for the closed-eyes frame so the first blink isn't a blank frame.
+    (document.getElementById("shinji-blink") as HTMLImageElement)
+      .decode()
+      .then(blink, () => {});
 
     // Mouse parallax: the two halves drift in opposite directions.
     let queued = false;
