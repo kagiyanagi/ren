@@ -1,35 +1,31 @@
 ---
 import { GITHUB_REPO } from "@/consts";
 const year = new Date().getFullYear();
+const link = "text-white/60 hover:text-white hover:underline";
 ---
 
 <section
   id="footer"
-  class="grid relative place-items-center text-center mt-4 pt-16 bg-white/[0.001]"
+  class="mt-16 mx-auto max-w-5xl px-5 py-6 border-t border-white/10 flex flex-col sm:flex-row gap-3 justify-between items-center text-xs text-white/40"
 >
-  <a
-    href={`https://github.com/${GITHUB_REPO}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    class="flex gap-1 place-items-center mx-auto max-w-72 sm:max-w-full text-center hover:underline"
-  >
-    Thanks for visiting! Make sure to give this a ✦ on GitHub.
-  </a>
-  <p
-    id="my-time"
-    class="px-2 pt-3 mx-auto max-w-72 sm:max-w-full text-sm text-white/50"
-  >
-  </p>
-  <p class="mb-10 py-3 px-2 mx-auto max-w-72 sm:max-w-full text-center">
-    Copyleft &copy; {year}. Developed by me, with the theme concept by
+  <p id="my-time"></p>
+  <p class="flex flex-wrap justify-center gap-x-3">
     <a
-      class="hover:underline"
-      href="https://github.com/ArnavK-09"
+      class={link}
+      href={`https://github.com/${GITHUB_REPO}`}
       target="_blank"
-      rel="noopener noreferrer">@ArnavK-09</a
-    >. <a class="hover:underline text-white/60" href="/humans.txt"
-      >Made by a human.</a
+      rel="noopener noreferrer">★ star on github</a
     >
+    <span>
+      theme by <a
+        class={link}
+        href="https://github.com/ArnavK-09"
+        target="_blank"
+        rel="noopener noreferrer">@ArnavK-09</a
+      >
+    </span>
+    <a class={link} href="/humans.txt">made by a human</a>
+    <span>copyleft &copy; {year}</span>
   </p>
 </section>
 
@@ -44,7 +40,7 @@ const year = new Date().getFullYear();
   });
   const doing = (h: number) =>
     h < 6
-      ? "probably asleep. or debugging. same thing."
+      ? "probably asleep. or debugging."
       : h < 8
         ? "waking up, barely."
         : h < 14
@@ -55,9 +51,8 @@ const year = new Date().getFullYear();
               ? "coding, probably."
               : "should be asleep. isn't.";
   function tick() {
-    const parts = clock.formatToParts(new Date());
-    const h = Number(parts.find((p) => p.type === "hour")?.value);
-    el.textContent = `it's ${clock.format(new Date())} for me (IST) — ${doing(h)}`;
+    const now = clock.format(new Date());
+    el.textContent = `${now} IST — ${doing(Number(now.slice(0, 2)))}`;
   }
   tick();
   setInterval(tick, 30_000);
