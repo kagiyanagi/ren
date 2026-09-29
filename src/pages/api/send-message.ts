@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { readTelegramConfig } from "@/lib/env";
+import { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } from "astro:env/server";
 
 export const prerender = false;
 
@@ -19,14 +19,19 @@ const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
 } as const;
 const RATE_LIMIT_WINDOW_MS = 30_000;
-const MAX_BODY_BYTES = 32_768;
+const MAX_BODY_LEN = 32_768;
 const MAX_NAME_LEN = 80;
 const MAX_EMAIL_LEN = 254;
-const MAX_MESSAGE_LEN = 4000;
+// Telegram caps a message at 4096 chars; leave room for the header lines.
+const MAX_MESSAGE_LEN = 3500;
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const env = readTelegramConfig();
+    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+      throw new Error(
+        "Server is not configured: set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID.",
+      );
+    }
 
     const contentType = request.headers.get("content-type") ?? "";
     if (!contentType.toLowerCase().includes("application/json")) {
@@ -54,8 +59,11 @@ export const POST: APIRoute = async ({ request }) => {
         { "Retry-After": String(retryAfter) },
       );
     }
-    const raw = await safeReadText(request, MAX_BODY_BYTES);
+    const raw = await request.text();
     if (!raw) return json(400, { ok: false, error: "Empty request body." });
+    if (raw.length > MAX_BODY_LEN) {
+      return json(413, { ok: false, error: "Request body is too large." });
+    }
 
     let parsed: unknown;
     try {
@@ -71,12 +79,12 @@ export const POST: APIRoute = async ({ request }) => {
     const text = formatTelegramMessage(validated.value);
 
     const telegramResp = await fetch(
-      `https://api.telegram.org/bot${env.token}/sendMessage`,
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
       {
         method: "POST",
         headers: JSON_HEADERS,
         body: JSON.stringify({
-          chat_id: env.chatId,
+          chat_id: TELEGRAM_CHAT_ID,
           text,
           disable_web_page_preview: true,
         }),
@@ -88,7 +96,7 @@ export const POST: APIRoute = async ({ request }) => {
       console.error(
         "[send-message] Telegram delivery failed",
         telegramResp.status,
-        await safeReadText(telegramResp, 8_192).catch(() => ""),
+        await telegramResp.text().catch(() => ""),
       );
       return json(502, { ok: false, error: "Failed to deliver message." });
     }
@@ -156,36 +164,15 @@ function isValidEmail(email: string): boolean {
 }
 
 function formatTelegramMessage(input: ValidatedInput): string {
-  const safeName = clamp(input.name, 200);
-  const safeEmail = clamp(input.email, 300);
-  const safeMessage = clamp(input.message, 3500);
   return [
     "📬 New Message from Contact Form",
     "",
-    `Name: ${safeName}`,
-    `Email: ${safeEmail}`,
+    `Name: ${input.name}`,
+    `Email: ${input.email}`,
     "",
     "Message:",
-    safeMessage,
+    input.message,
   ].join("\n");
-}
-
-function clamp(text: string, maxLen: number): string {
-  return text.length <= maxLen
-    ? text
-    : text.slice(0, Math.max(0, maxLen - 1)) + "…";
-}
-
-async function safeReadText(
-  input: Request | Response,
-  maxBytes: number,
-): Promise<string> {
-  const buf = await input.arrayBuffer().catch(() => null);
-  if (!buf) return "";
-  const view = new Uint8Array(buf);
-  if (view.byteLength === 0) return "";
-  if (view.byteLength > maxBytes) throw new Error("Request body is too large.");
-  return new TextDecoder("utf-8", { fatal: false }).decode(view);
 }
 
 function json(

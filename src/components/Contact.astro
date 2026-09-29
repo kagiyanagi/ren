@@ -1,10 +1,10 @@
 ---
 import WindowCard from "@/components/WindowCard.astro";
 
+// maxlength mirrors the server limits in api/send-message.ts.
 const inputClass =
-  "bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-colors custom-underscore-caret w-full";
+  "bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:bg-white/10 [&:user-invalid]:ring-2 [&:user-invalid]:ring-red-400 transition-colors [caret-shape:underscore] w-full";
 const labelClass = "text-white/70 text-sm";
-const errorClass = "text-red-400 text-sm mt-1";
 ---
 
 <WindowCard bordered={false}>
@@ -15,59 +15,43 @@ const errorClass = "text-red-400 text-sm mt-1";
   <p class="text-white/80 text-sm font-thin mb-6">
     Want to send me a message? Then go ahead!
   </p>
-  <form id="contact-form" class="flex flex-col gap-4" novalidate>
+  <form id="contact-form" class="flex flex-col gap-4">
     <div class="flex flex-col gap-2">
       <label for="name" class={labelClass}>Name</label>
-      <div class="relative">
-        <input
-          type="text"
-          id="name"
-          name="name"
-          placeholder="Your name"
-          autocomplete="name"
-          maxlength="80"
-          aria-describedby="err-name"
-          required
-          class={inputClass}
-        />
-        <span id="fake-caret-name" class="fake-caret hidden">_</span>
-      </div>
-      <span id="err-name" class={errorClass}></span>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        placeholder="Your name"
+        autocomplete="name"
+        maxlength="80"
+        required
+        class={inputClass}
+      />
     </div>
     <div class="flex flex-col gap-2">
       <label for="email" class={labelClass}>Email</label>
-      <div class="relative">
-        <input
-          type="text"
-          id="email"
-          name="email"
-          placeholder="your@email.com"
-          inputmode="email"
-          autocomplete="email"
-          maxlength="254"
-          aria-describedby="err-email"
-          required
-          class={inputClass}
-        />
-        <span id="fake-caret-email" class="fake-caret hidden">_</span>
-      </div>
-      <span id="err-email" class={errorClass}></span>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="your@email.com"
+        autocomplete="email"
+        maxlength="254"
+        required
+        class={inputClass}
+      />
     </div>
     <div class="flex flex-col gap-2">
       <label for="message" class={labelClass}>Message</label>
-      <div class="relative">
-        <textarea
-          id="message"
-          name="message"
-          placeholder="Your message..."
-          rows="5"
-          maxlength="4000"
-          aria-describedby="err-message"
-          required
-          class={`${inputClass} resize-none`}></textarea>
-        <span id="fake-caret-message" class="fake-caret hidden">_</span>
-      </div>
-      <span id="err-message" class={errorClass}></span>
+      <textarea
+        id="message"
+        name="message"
+        placeholder="Your message..."
+        rows="5"
+        maxlength="3500"
+        required
+        class={`${inputClass} resize-none`}></textarea>
     </div>
     <button
       type="submit"
@@ -78,329 +62,99 @@ const errorClass = "text-red-400 text-sm mt-1";
     </button>
   </form>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("contact-form");
-      const nameEl = document.getElementById("name");
-      const emailEl = document.getElementById("email");
-      const msgEl = document.getElementById("message");
-      const errName = document.getElementById("err-name");
-      const errEmail = document.getElementById("err-email");
-      const errMsg = document.getElementById("err-message");
-      const sendBtn = document.getElementById("send-btn");
-      // Prevent rapid repeat sends from the same session.
-      const COOLDOWN_MS = 30_000;
-      const COOLDOWN_NOTICE_MS = 5_000;
-      let cooldownUntil = 0;
-      let cooldownNotice = null;
-      let cooldownNoticeTimer = null;
-      let sending = false;
-      const defaultBtnLabel = sendBtn?.textContent?.trim() || "Send Message";
-      function clearError(el, errEl) {
-        if (!el) return;
-        el.classList.remove("ring-2", "ring-red-400");
-        el.removeAttribute("aria-invalid");
-        if (errEl) errEl.textContent = "";
-      }
-      function setError(el, errEl, msg) {
-        if (!el) return;
-        el.classList.add("ring-2", "ring-red-400");
-        el.setAttribute("aria-invalid", "true");
-        if (errEl) errEl.textContent = msg;
-      }
-      function validate() {
-        let ok = true;
-        clearError(nameEl, errName);
-        clearError(emailEl, errEmail);
-        clearError(msgEl, errMsg);
-        const name = nameEl?.value?.trim() || "";
-        const email = emailEl?.value?.trim() || "";
-        const message = msgEl?.value?.trim() || "";
-        if (!name) {
-          setError(nameEl, errName, "Please enter your name.");
-          ok = false;
-        }
-        if (!email) {
-          setError(emailEl, errEmail, "Please enter your email.");
-          ok = false;
-        } else {
-          const re = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-          if (!re.test(email)) {
-            setError(emailEl, errEmail, "Please enter a valid email.");
-            ok = false;
-          }
-        }
-        if (!message) {
-          setError(msgEl, errMsg, "Please enter a message.");
-          ok = false;
-        }
-        return ok;
-      }
-      [nameEl, emailEl, msgEl].forEach((el) => {
-        if (!el) return;
-        el.addEventListener("input", () => {
-          if (el.id === "name") clearError(nameEl, errName);
-          if (el.id === "email") clearError(emailEl, errEmail);
-          if (el.id === "message") clearError(msgEl, errMsg);
-        });
-      });
-      function getSecondsRemaining() {
-        return Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000));
-      }
-      function setCooldown(durationMs = COOLDOWN_MS) {
-        const now = Date.now();
-        cooldownUntil = Math.max(cooldownUntil, now + durationMs);
-      }
-      function showCooldownNotice() {
-        if (!window.showNotification) return;
-        if (cooldownNoticeTimer) {
-          clearInterval(cooldownNoticeTimer);
-          cooldownNoticeTimer = null;
-        }
-        if (cooldownNotice && document.body.contains(cooldownNotice)) {
-          cooldownNotice.remove();
-        }
-        const seconds = getSecondsRemaining();
-        cooldownNotice = window.showNotification(
-          `Please wait ${seconds}s before sending another message.`,
-          "warning",
-          COOLDOWN_NOTICE_MS,
-        );
-        if (!cooldownNotice) return;
-        const startedAt = Date.now();
-        cooldownNoticeTimer = setInterval(() => {
-          if (!document.body.contains(cooldownNotice)) {
-            clearInterval(cooldownNoticeTimer);
-            cooldownNoticeTimer = null;
-            return;
-          }
-          const textEl = cooldownNotice.querySelector(".notify-text");
-          if (textEl) {
-            const remaining = getSecondsRemaining();
-            textEl.textContent =
-              remaining > 0
-                ? `Please wait ${remaining}s before sending another message.`
-                : "You can send another message now.";
-          }
-          if (Date.now() - startedAt >= COOLDOWN_NOTICE_MS) {
-            clearInterval(cooldownNoticeTimer);
-            cooldownNoticeTimer = null;
-          }
-        }, 1000);
-      }
-      if (!form) return;
-      const focusNextOnEnter = (current, next) => {
-        if (!current) return;
-        current.addEventListener("keydown", (event) => {
-          if (event.key !== "Enter" || event.isComposing) return;
-          event.preventDefault();
-          if (next && typeof next.focus === "function") next.focus();
-        });
-      };
-      focusNextOnEnter(nameEl, emailEl);
-      focusNextOnEnter(emailEl, msgEl);
-      if (msgEl) {
-        msgEl.addEventListener("keydown", (event) => {
-          if (
-            event.key !== "Enter" ||
-            event.isComposing ||
-            !(event.ctrlKey || event.metaKey)
-          )
-            return;
-          event.preventDefault();
-          if (typeof form.requestSubmit === "function") form.requestSubmit();
-          else sendBtn?.click();
-        });
-      }
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        if (cooldownUntil && Date.now() < cooldownUntil) {
-          showCooldownNotice();
-          return;
-        }
-        if (sending) return;
-        if (!validate()) {
-          const firstErr = document.querySelector(".ring-red-400");
-          if (firstErr && typeof firstErr.focus === "function")
-            firstErr.focus();
-          return;
-        }
-        const name = nameEl?.value || "";
-        const email = emailEl?.value || "";
-        const message = msgEl?.value || "";
-        try {
-          sending = true;
-          sendBtn?.setAttribute("disabled", "true");
-          if (sendBtn) sendBtn.textContent = "Sending...";
-          const bodyToSend = { name, email, message };
-          const resp = await fetch("/api/send-message", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify(bodyToSend),
-          });
-          const text = await resp.text().catch(() => "");
-          let json;
-          try {
-            json = text ? JSON.parse(text) : null;
-          } catch (err) {
-            json = { parseError: String(err), raw: text };
-          }
-          if (!resp.ok) {
-            let detail = "";
-            if (json && typeof json === "object" && "error" in json) {
-              const errVal = json.error;
-              if (typeof errVal === "string") detail = errVal;
-            }
-            if (!detail && resp.status === 404) {
-              detail = "Endpoint not found. Check deployment output settings.";
-            }
-            if (resp.status === 429) {
-              const retryAfter = Number(resp.headers.get("Retry-After") || 10);
-              setCooldown(retryAfter * 1000);
-              showCooldownNotice();
-              return;
-            }
-            const msg = detail
-              ? `Failed to send message: ${detail}`
-              : `Failed to send message. (${resp.status})`;
-            if (window.showNotification) window.showNotification(msg, "error");
-            else alert(msg);
-            return;
-          }
-          const okMsg = "Message sent successfully!";
-          if (window.showNotification)
-            window.showNotification(okMsg, "success");
-          else alert(okMsg);
-          form.reset();
-          setCooldown(COOLDOWN_MS);
-        } catch (error) {
-          console.error("Error sending message:", error);
-          const errMsgStr = "Failed to send message. Please try again.";
-          if (window.showNotification)
-            window.showNotification(errMsgStr, "error");
-          else alert(errMsgStr);
-        } finally {
-          sending = false;
-          if (sendBtn) {
-            sendBtn.removeAttribute("disabled");
-            sendBtn.textContent = defaultBtnLabel;
-          }
-        }
+    const form = document.getElementById("contact-form");
+    const nameEl = document.getElementById("name");
+    const emailEl = document.getElementById("email");
+    const msgEl = document.getElementById("message");
+    const sendBtn = document.getElementById("send-btn");
+    const bell = new Audio("/terminal_bell.mp3");
+    // Matches the server's per-client window.
+    const COOLDOWN_MS = 30_000;
+    let cooldownUntil = 0;
+    let sending = false;
+
+    function showCooldownNotice() {
+      const seconds = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      window.showNotification(
+        `Please wait ${seconds}s before sending another message.`,
+        "warning",
+      );
+    }
+
+    // Terminal bell on backspace in an empty field.
+    [nameEl, emailEl, msgEl].forEach((el) => {
+      el.addEventListener("keydown", (event) => {
+        if (event.key === "Backspace" && !el.value) bell.play().catch(() => {});
       });
     });
-  </script>
-  <script>
-    // Mirror input styles to compute the caret position for the fake underscore.
-    function getCaretCoordinates(element) {
-      const position = element.selectionStart;
-      const div = document.createElement("div");
-      const span = document.createElement("span");
-      const style = getComputedStyle(element);
-      const props = [
-        "direction",
-        "boxSizing",
-        "width",
-        "height",
-        "overflowX",
-        "overflowY",
-        "borderTopWidth",
-        "borderRightWidth",
-        "borderBottomWidth",
-        "borderLeftWidth",
-        "paddingTop",
-        "paddingRight",
-        "paddingBottom",
-        "paddingLeft",
-        "fontStyle",
-        "fontVariant",
-        "fontWeight",
-        "fontStretch",
-        "fontSize",
-        "fontSizeAdjust",
-        "lineHeight",
-        "fontFamily",
-        "textAlign",
-        "textTransform",
-        "textIndent",
-        "textDecoration",
-        "letterSpacing",
-        "wordSpacing",
-      ];
-      div.style.position = "absolute";
-      div.style.top = "-9999px";
-      div.style.left = "-9999px";
-      div.style.whiteSpace = "pre-wrap";
-      div.style.wordWrap = "break-word";
-      props.forEach((prop) => {
-        div.style[prop] = style[prop];
-      });
-      if (element.tagName === "INPUT") {
-        div.style.whiteSpace = "nowrap";
-      } else {
-        div.style.height = `${element.clientHeight}px`;
-        div.style.overflowY = "scroll";
-      }
-      div.style.width = `${element.clientWidth}px`;
-      div.textContent = element.value.substring(0, position);
-      div.appendChild(span);
-      span.textContent = element.value.substring(position) || ".";
-      document.body.appendChild(div);
-      const spanRect = span.getBoundingClientRect();
-      const divRect = div.getBoundingClientRect();
-      const coordinates = {
-        top: spanRect.top - divRect.top,
-        left: spanRect.left - divRect.left,
-        height: spanRect.height,
-      };
-      document.body.removeChild(div);
-      return coordinates;
-    }
-    document.addEventListener("DOMContentLoaded", () => {
-      const fields = [
-        {
-          input: document.getElementById("name"),
-          caret: document.getElementById("fake-caret-name"),
-        },
-        {
-          input: document.getElementById("email"),
-          caret: document.getElementById("fake-caret-email"),
-        },
-        {
-          input: document.getElementById("message"),
-          caret: document.getElementById("fake-caret-message"),
-        },
-      ];
-      const bellAudio = new Audio("/terminal_bell.mp3");
-      bellAudio.preload = "auto";
 
-      fields.forEach(({ input, caret }) => {
-        if (!input || !caret) return;
-        const updateCaret = () => {
-          const coords = getCaretCoordinates(input);
-          caret.style.top = `${coords.top - input.scrollTop}px`;
-          caret.style.left = `${coords.left - input.scrollLeft}px`;
-          caret.classList.remove("hidden");
-        };
-        input.addEventListener("focus", updateCaret);
-        input.addEventListener("input", updateCaret);
-        input.addEventListener("keyup", updateCaret);
-        input.addEventListener("click", updateCaret);
-        input.addEventListener("scroll", updateCaret);
-        // Play a terminal bell on backspace when the field is empty.
-        input.addEventListener("keydown", (event) => {
-          if (event.key === "Backspace" && input.value.length === 0) {
-            bellAudio
-              .play()
-              .catch((err) => console.warn("Audio play failed:", err));
-          }
-          updateCaret();
-        });
-        input.addEventListener("blur", () => {
-          caret.classList.add("hidden");
-        });
+    const focusNextOnEnter = (current, next) => {
+      current.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" || event.isComposing) return;
+        event.preventDefault();
+        next.focus();
       });
+    };
+    focusNextOnEnter(nameEl, emailEl);
+    focusNextOnEnter(emailEl, msgEl);
+    msgEl.addEventListener("keydown", (event) => {
+      if (
+        event.key !== "Enter" ||
+        event.isComposing ||
+        !(event.ctrlKey || event.metaKey)
+      )
+        return;
+      event.preventDefault();
+      form.requestSubmit();
+    });
+
+    // Only fires once the browser's built-in validation passes.
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (Date.now() < cooldownUntil) return showCooldownNotice();
+      if (sending) return;
+      sending = true;
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Sending...";
+      try {
+        const resp = await fetch("/api/send-message", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            name: nameEl.value,
+            email: emailEl.value,
+            message: msgEl.value,
+          }),
+        });
+        if (resp.status === 429) {
+          const retryAfter = Number(resp.headers.get("Retry-After") || 10);
+          cooldownUntil = Date.now() + retryAfter * 1000;
+          return showCooldownNotice();
+        }
+        if (!resp.ok) {
+          const json = await resp.json().catch(() => null);
+          const detail =
+            typeof json?.error === "string" ? json.error : `(${resp.status})`;
+          window.showNotification(`Failed to send message: ${detail}`, "error");
+          return;
+        }
+        window.showNotification("Message sent successfully!", "success");
+        form.reset();
+        cooldownUntil = Date.now() + COOLDOWN_MS;
+      } catch (error) {
+        console.error("Error sending message:", error);
+        window.showNotification(
+          "Failed to send message. Please try again.",
+          "error",
+        );
+      } finally {
+        sending = false;
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Send Message";
+      }
     });
   </script>
 </WindowCard>

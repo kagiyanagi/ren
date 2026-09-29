@@ -1,10 +1,10 @@
 ---
 import "@/styles/global.css";
+import { GOOGLE_SITE_VERIFICATION } from "astro:env/server";
 import {
   SITE_DESCRIPTION,
   KNOWN_TECH,
   NAV_LINKS,
-  SEO_KEYWORDS,
   SITE_TITLE,
   TWITTER_HANDLE,
 } from "@/consts";
@@ -23,17 +23,6 @@ const {
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-// Read at build time from Vercel env vars (or local .env). Empty means skip.
-const googleSiteVerification = (
-  import.meta.env.GOOGLE_SITE_VERIFICATION ??
-  process.env.GOOGLE_SITE_VERIFICATION ??
-  ""
-).trim();
-
-const socialLinks = NAV_LINKS.map((link) => link.href)
-  .filter((href): href is string => Boolean(href))
-  .map((href) => (href.startsWith("http") ? href : `https:${href}`));
-
 const structuredData = [
   {
     "@context": "https://schema.org",
@@ -42,7 +31,7 @@ const structuredData = [
     alternateName: ["Aqua", "Kagiyanagi", "Ren"],
     description: SITE_DESCRIPTION,
     url: canonicalURL.href,
-    sameAs: socialLinks,
+    sameAs: NAV_LINKS.map((link) => link.href),
     knowsAbout: KNOWN_TECH,
   },
   {
@@ -63,7 +52,6 @@ const structuredData = [
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 <link rel="icon" href="/muichiro.svg" type="image/svg+xml" />
-<link rel="shortcut icon" href="/favicon.ico" />
 <meta name="generator" content={Astro.generator} />
 <link rel="sitemap" href="/sitemap-index.xml" />
 
@@ -76,17 +64,15 @@ const structuredData = [
 />
 
 {
-  googleSiteVerification && (
-    <meta name="google-site-verification" content={googleSiteVerification} />
+  GOOGLE_SITE_VERIFICATION && (
+    <meta name="google-site-verification" content={GOOGLE_SITE_VERIFICATION} />
   )
 }
 
 <link rel="canonical" href={canonicalURL} />
 
 <title>{title}</title>
-<meta name="title" content={title} />
 <meta name="description" content={description} />
-<meta name="keywords" content={SEO_KEYWORDS} />
 <meta name="author" content={SITE_TITLE} />
 <meta
   name="robots"

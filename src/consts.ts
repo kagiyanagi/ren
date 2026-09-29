@@ -1,38 +1,12 @@
 export const SITE_TITLE = "Aman";
 export const SITE_DESCRIPTION =
   `Hi, I'm Aman, known as Ren Kagiyanagi or some other aliases on the internet. I am a self-taught engineer (kind of) and a tech enthusiast from India. Explore my portfolio built which showcases my projects and skills.`.trim();
-export const SEO_KEYWORDS = [
-  "Aman",
-  "Aqua",
-  "Kagiyanagi",
-  "Ren Kagiyanagi",
-  "Ren",
-  "Aman Kagiyanagi",
-  "Aqua Ren",
-  "Kagiyanagi Ren",
-  "Aman Aqua",
-  "Aman portfolio",
-  "Aman developer",
-  "Aman engineer",
-  "Aman web developer",
-  "Aman Android",
-  "Aman graphics",
-  "Aman GFX",
-  "Aman India",
-].join(", ");
 export const TWITTER_HANDLE = "@kagiyanagi";
 
 export const KNOWN_TECH =
   `Astro,Tailwind CSS,JavaScript,Python,CSS,HTML,C,C++,Bash,VIM,React,Git,Photoshop,Figma,Pandas,NumPy,Hyprland,Davinci Resolve,Docker`.split(
     ",",
   );
-
-// Toggle: when true, the homepage fetches pinned repos from
-// https://github.com/${GITHUB_USERNAME} at build time and renders them
-// instead of the static PROJECTS list below. PROJECTS is still used as a
-// fallback if the fetch fails (network error, GitHub HTML change, etc.).
-// Forkers who'd rather hand-curate their projects can flip this to false.
-export const USE_PINNED_REPOS = true;
 
 export type Project = {
   title: string;
@@ -69,29 +43,27 @@ export const PROJECTS: readonly Project[] = [
     description: "My First Cpp Game Tic Tac Toe.",
   },
 ];
-export const ABOUT_ME =
-  `I'm a self-taught engineer from India, currently in high school. My interests cover web development, Android (core), low-level systems, graphic design, IoT, and machine learning. I also enjoy anime and music, which inspire my creative work - I'm committed to continuous learning and building projects that matter.`.trim();
 export const GITHUB_USERNAME = "kagiyanagi";
 export const GITHUB_REPO = `${GITHUB_USERNAME}/ren`;
-export const NAV_LINKS: Array<{ title: string; href?: string }> = [
+export const NAV_LINKS: Array<{ title: string; href: string }> = [
   {
     title: "Telegram",
-    href: "//t.me/rensakashvani",
+    href: "https://t.me/rensakashvani",
   },
   {
     title: "Github",
-    href: "//github.com/" + GITHUB_USERNAME,
+    href: "https://github.com/" + GITHUB_USERNAME,
   },
   {
     title: "YouTube",
-    href: "//youtube.com/@kagiyanagi",
+    href: "https://youtube.com/@kagiyanagi",
   },
   {
     title: "Ko-fi",
-    href: "//ko-fi.com/kagiyanagi",
+    href: "https://ko-fi.com/kagiyanagi",
   },
   {
     title: "X",
-    href: "//x.com/kagiyanagi",
+    href: "https://x.com/kagiyanagi",
   },
 ];

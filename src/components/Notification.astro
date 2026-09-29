@@ -1,7 +1,3 @@
----
-
----
-
 <div
   id="__notification_root"
   aria-live="polite"
@@ -10,60 +6,39 @@
 </div>
 
 <script type="module">
-  (function () {
-    const root = document.getElementById("__notification_root");
-    if (!root) return;
+  const root = document.getElementById("__notification_root");
+  const bgMap = {
+    success: "bg-emerald-700",
+    error: "bg-rose-600",
+    warning: "bg-amber-700",
+    info: "bg-slate-700",
+  };
 
-    function makeNode(message, type) {
-      const el = document.createElement("div");
-      el.className =
-        "notify-item pointer-events-auto max-w-xl w-full mx-auto rounded-md px-4 py-2 mb-2 text-sm shadow-lg flex items-center gap-3 justify-between";
-      el.setAttribute("role", "status");
+  function hide(node) {
+    node.classList.add("notify-hide");
+    setTimeout(() => node.remove(), 300);
+  }
 
-      const bgMap = {
-        success: "bg-emerald-700",
-        error: "bg-rose-600",
-        warning: "bg-amber-700",
-        info: "bg-slate-700",
-      };
-      const bg = bgMap[type] || bgMap.info;
-      el.classList.add(...bg.split(" "));
+  window.showNotification = function (message, type = "info", ttl = 4000) {
+    const el = document.createElement("div");
+    el.className =
+      "notify-item pointer-events-auto max-w-xl w-full mx-auto rounded-md px-4 py-2 mb-2 text-sm shadow-lg flex items-center gap-3 justify-between";
+    el.classList.add(bgMap[type] || bgMap.info);
+    el.setAttribute("role", "status");
 
-      const txt = document.createElement("div");
-      txt.textContent = message;
-      txt.className = "text-white notify-text";
+    const txt = document.createElement("div");
+    txt.textContent = message;
+    txt.className = "text-white";
 
-      const close = document.createElement("button");
-      close.className = "text-white/80 hover:text-white ml-4";
-      close.type = "button";
-      close.textContent = "✕";
-      close.setAttribute("aria-label", "Dismiss notification");
-      close.addEventListener("click", () => {
-        hide(el);
-      });
+    const close = document.createElement("button");
+    close.className = "text-white/80 hover:text-white ml-4";
+    close.type = "button";
+    close.textContent = "✕";
+    close.setAttribute("aria-label", "Dismiss notification");
+    close.addEventListener("click", () => hide(el));
 
-      el.appendChild(txt);
-      el.appendChild(close);
-
-      return el;
-    }
-
-    function hide(node) {
-      if (!node) return;
-      node.classList.add("notify-hide");
-      setTimeout(() => node.remove(), 300);
-    }
-
-    window.showNotification = function (message, type = "info", ttl = 4000) {
-      try {
-        const node = makeNode(message, type);
-        root.appendChild(node);
-        setTimeout(() => hide(node), ttl);
-        return node;
-      } catch (e) {
-        console.warn("showNotification error", e);
-      }
-      return null;
-    };
-  })();
+    el.append(txt, close);
+    root.appendChild(el);
+    setTimeout(() => hide(el), ttl);
+  };
 </script>

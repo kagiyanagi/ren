@@ -1,13 +1,12 @@
 ---
 type Props = {
-  className?: string;
+  class?: string;
 };
 
-const { className = "" } = Astro.props;
-const passedClass = (Astro.props as any).class ?? className ?? "";
+const { class: className = "" } = Astro.props;
 ---
 
-<div class={`hero-bg ${passedClass}`} data-binary-bg aria-hidden="true"></div>
+<div class={`hero-bg ${className}`} data-binary-bg aria-hidden="true"></div>
 
 <script>
   // Deferred module script: runs after parse, so it also finds the footer's

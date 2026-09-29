@@ -48,10 +48,10 @@ Only the contact form needs configuration. Copy `.env.example` to `.env` and fil
 | -------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `TELEGRAM_BOT_TOKEN`       | yes      | Bot token from [@BotFather](https://t.me/BotFather).                                                                                                                                                                          |
 | `TELEGRAM_CHAT_ID`         | yes      | Your numeric Telegram chat id (where messages get sent).                                                                                                                                                                      |
-| `GITHUB_TOKEN`             | optional | Used at build time by `src/lib/github.ts` for the GraphQL pinned-repos path. Any classic token with no scopes works - pinned repo metadata is public. Without it, the build falls back to scraping the public profile page.   |
+| `GITHUB_TOKEN`             | optional | Used at build time by `src/lib/github.ts` to fetch pinned repos via GraphQL. Any classic token with no scopes works - pinned repo metadata is public. Without it, the static `PROJECTS` list is shown.                        |
 | `GOOGLE_SITE_VERIFICATION` | optional | The `content` value from Google Search Console's "HTML tag" method. When set, `BaseHead.astro` emits a `<meta name="google-site-verification">` tag at build time. Set this in Vercel env vars to avoid committing the token. |
 
-The legacy aliases `BOT_TOKEN` / `CHAT_ID` are also accepted as fallbacks for the Telegram values (see `src/lib/env.ts`), but new deployments should use the canonical names above.
+All four are declared in the `env.schema` block of `astro.config.mjs` and imported from `astro:env/server`.
 
 For Vercel, add both variables under **Project → Settings → Environment Variables** for the `Production` and `Preview` environments.
 
@@ -77,13 +77,13 @@ src/
 │   ├── house.gif      - used in the "Contact me" section
 │   └── villain.png    - used in the "About me" section
 ├── components/      # Astro components, all server-rendered. Per-component <script> tags ship client JS.
-│   ├── BaseHead.astro       - <head> contents, OG/Twitter/JSON-LD, font preload, ClientRouter
-│   ├── BinaryBackground.astro - animated 0/1 field used behind the hero
+│   ├── BaseHead.astro       - <head> contents, OG/Twitter/JSON-LD, font preload
+│   ├── BinaryBackground.astro - animated 0/1 field used behind the hero and footer
 │   ├── Breadcrumb.astro     - white "tech" pill
-│   ├── Contact.astro        - contact form, client-side validation, cooldown, fake terminal caret
+│   ├── Contact.astro        - contact form (native validation, underscore caret, cooldown)
 │   ├── Footer.astro         - footer with dynamic year
 │   ├── Hero.astro           - landing hero block
-│   ├── Navbar.astro         - top nav, internal vs external link handling, scroll-styled logo
+│   ├── Navbar.astro         - top nav, scroll-styled logo
 │   ├── Notification.astro   - global toast root, exposes window.showNotification
 │   ├── ProjectCard.astro    - project tile (composed inside WindowCard)
 │   ├── Section.astro        - titled section wrapper (`<Title />` styling)
@@ -91,18 +91,15 @@ src/
 ├── layouts/
 │   └── Layout.astro         - shared HTML shell (head + nav + main + footer + notification root)
 ├── lib/
-│   ├── env.ts               - typed reader for Telegram secrets (single source of truth)
-│   └── github.ts            - build-time fetcher for GitHub pinned repos (GraphQL → HTML scrape → null)
+│   └── github.ts            - build-time fetcher for GitHub pinned repos + latest commit
 ├── pages/
-│   ├── 404.astro            - uses <Layout>, hard-codes /index and a JS-driven refresh
+│   ├── 404.astro            - uses <Layout>, links to /index, the contact form, and a refresh
 │   ├── api/
 │   │   └── send-message.ts  - only dynamic route; rate-limited proxy to Telegram
-│   ├── index.astro          - the entire homepage
-│   └── rss.xml.js           - RSS feed for the `blog` collection (currently empty)
+│   └── index.astro          - the entire homepage
 ├── styles/
 │   └── global.css           - fonts, custom cursors, scanline/flicker effects, scrollbar
-├── consts.ts                - site metadata, projects, nav links, GitHub repo
-└── content.config.ts        - defines the `blog` collection (no posts shipped yet)
+└── consts.ts                - site metadata, projects, nav links, GitHub repo
 
 public/
 ├── cursors/         # Pixel-art cursors used in global.css
@@ -117,62 +114,51 @@ public/
 
 ### Path aliasing
 
-`vite.resolve.alias` maps `@/*` → `./src/*`. Always import via the alias (`@/components/...`, `@/lib/env`, `@/assets/...`) - never relative paths.
+`vite.resolve.alias` maps `@/*` → `./src/*`. Always import via the alias (`@/components/...`, `@/lib/github`, `@/assets/...`) - never relative paths.
 
 ### Single source of truth: `src/consts.ts`
 
 Everything user-facing is driven from this file. Edit here, not in templates:
 
-- `SITE_TITLE`, `SITE_DESCRIPTION`, `SEO_KEYWORDS`, `TWITTER_HANDLE` → fed into `<BaseHead>` and JSON-LD.
+- `SITE_TITLE`, `SITE_DESCRIPTION`, `TWITTER_HANDLE` → fed into `<BaseHead>` and JSON-LD.
 - `KNOWN_TECH` → renders the "Technologies I like" pills.
-- `PROJECTS` → renders project cards.
-- `ABOUT_ME` → reserved for the about copy.
-- `NAV_LINKS` → top-nav entries. External hrefs use protocol-relative `//host/path` or `https://…`.
+- `PROJECTS` → project cards, used when pinned repos can't be fetched.
+- `NAV_LINKS` → top-nav entries (external `https://…` URLs, opened in a new tab).
 - `GITHUB_USERNAME` / `GITHUB_REPO` → used by the index page's last-commit fetch, the footer link, and the pinned-repos fetcher.
-- `USE_PINNED_REPOS` → when `true` (default), the homepage fetches your GitHub pinned repos at build time and renders them instead of the static `PROJECTS` list. Flip to `false` if you'd rather hand-curate.
 
 ### Pinned repos as projects
 
-When `USE_PINNED_REPOS` is enabled, `src/lib/github.ts` runs at build time and tries two paths:
-
-1. **GraphQL** - only used if `GITHUB_TOKEN` is set. One request returns all pinned repos with title, description, and `pushedAt`.
-2. **HTML scrape + REST** - no token required. Parses `github.com/${GITHUB_USERNAME}` to find pinned repo slugs, then hits `api.github.com/repos/{owner}/{name}` per repo for description and timestamp.
-
-If either path produces at least one project, those replace `PROJECTS`. If both fail (network error, GitHub HTML reshuffle, repo not found), the static `PROJECTS` constant is used as a safety net. Updating your pinned repos on GitHub is enough - no commits, no redeploys until the next site rebuild.
+At build time `src/lib/github.ts` makes one GraphQL request (requires `GITHUB_TOKEN`) for your pinned repos' name, description, and `pushedAt`. If it returns at least one project, those replace `PROJECTS`. With no token, or on any failure, the static `PROJECTS` constant is used as a safety net. Updating your pinned repos on GitHub is enough - no commits, no redeploys until the next site rebuild.
 
 ### Layout flow
 
-`Layout.astro` is the shell every page uses. It renders `<BaseHead>` (meta + JSON-LD + fonts), a fixed `<Navbar>`, a `<main>` slot, `<Footer>`, and the `<Notification>` toast root. `<BaseHead>` also pulls in `src/styles/global.css` once, which is responsible for the CRT aesthetic (scanlines, flicker, custom cursors, fonts).
+`Layout.astro` is the shell every page uses. It renders `<BaseHead>` (meta + JSON-LD + fonts), a `<Navbar>` (fixed from `md` up), a `<main>` slot, `<Footer>`, and the `<Notification>` toast root. `<BaseHead>` also pulls in `src/styles/global.css` once, which is responsible for the CRT aesthetic (scanlines, flicker, custom cursors, fonts).
 
 ### Contact form flow
 
-1. `Contact.astro` validates `{ name, email, message }` client-side, debounces submissions for 30s, and POSTs JSON to `/api/send-message`.
+1. `Contact.astro` relies on native HTML validation (`required`, `type="email"`, `maxlength`), enforces a 30s cooldown, and POSTs JSON to `/api/send-message`.
 2. `send-message.ts`:
-   - Loads secrets via `readTelegramConfig()` from `src/lib/env.ts`.
+   - Reads `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` from `astro:env/server`.
    - Rejects non-JSON requests with `415` and oversized bodies (`> 32 KB`).
-   - Applies an in-memory per-IP rate limit (`30s`); resets on cold start, so this is best-effort not durable.
+   - Applies an in-memory per-IP rate limit (`30s`, counted only for valid requests); resets on cold start, so this is best-effort not durable.
    - Validates fields (lengths, email regex).
    - Forwards a formatted string to `https://api.telegram.org/bot<token>/sendMessage`.
    - Never echoes upstream Telegram errors back to the client.
-3. The client renders the result via `window.showNotification` (defined by `Notification.astro`); falls back to `alert()` if that helper isn't loaded.
+3. The client renders the result via `window.showNotification` (defined by `Notification.astro`).
 
 ### Last-updated timestamp
 
-`src/pages/index.astro` fetches `https://api.github.com/repos/${GITHUB_REPO}/commits?per_page=1` **at build time** and ships the resulting ISO timestamp as a `data-commit` attribute. A small inline script counts up from it. If you fork, change `GITHUB_USERNAME` in `consts.ts`.
-
-### Blog (stub)
-
-`src/content.config.ts` defines a `blog` collection backed by `src/content/blog/**/*.{md,mdx}`. That directory doesn't exist yet, so `src/pages/rss.xml.js` produces an empty feed. To start blogging, create `src/content/blog/` and add MDX files matching the schema.
+`fetchLatestCommitDate()` in `src/lib/github.ts` fetches `https://api.github.com/repos/${GITHUB_REPO}/commits?per_page=1` **at build time** (authenticated when `GITHUB_TOKEN` is set) and ships the resulting ISO timestamp as a `data-commit` attribute. A small inline script counts up from it. If you fork, change `GITHUB_USERNAME` in `consts.ts`.
 
 ---
 
 ## Styling
 
-- **Tailwind v3** via `@astrojs/tailwind`, configured in `tailwind.config.mjs` (scans `./src/**/*`). The `@tailwindcss/typography` plugin is loaded but currently unused - left in place for future MDX posts.
+- **Tailwind v3** via `@astrojs/tailwind`, configured in `tailwind.config.mjs` (scans `./src/**/*`).
 - **Global CSS** in `src/styles/global.css` declares:
   - `@font-face` for `VCR` and `RetroByte` (loaded from `/public/fonts/`).
   - Custom pixel cursors mapped per-element type (body, text inputs, links/buttons).
-  - The CRT effects: `.terminal-overlay` (scanlines), `.terminal-flicker`, `.terminal-glow`, `.terminal-scanline`, `.blinking-cursor`, `.fake-caret`, `.hero-bg`.
+  - The CRT effects: `.terminal-overlay` (scanlines), `.terminal-flicker`, `.terminal-glow`, `.terminal-scanline`, `.blinking-cursor`, `.hero-bg`. Inputs use native `caret-shape: underscore` (Chromium; other browsers show a normal caret).
 - **Theme:** black background, white text, `font-pixel` (RetroByte) for headings, `VCR` for body. Selection inverts to white/black.
 
 ---
@@ -198,7 +184,7 @@ If either path produces at least one project, those replace `PROJECTS`. If both 
 
 If you're forking this:
 
-1. Replace everything in `src/consts.ts` (title, description, keywords, projects, nav, GitHub repo). Set `USE_PINNED_REPOS = false` if you want to keep a static project list; leave it `true` and just pin your repos on GitHub otherwise.
+1. Replace everything in `src/consts.ts` (title, description, projects, nav, GitHub repo). Set `GITHUB_TOKEN` and pin repos on GitHub to have them listed automatically; otherwise `PROJECTS` is shown.
 2. Swap `src/assets/{hero,villain,house}.{png,gif}` with your own images (same import paths).
 3. Update `site:` in `astro.config.mjs` to your own URL.
 4. Replace `public/favicon.ico`, `public/muichiro.{ico,svg}`, `public/image.jpg`.

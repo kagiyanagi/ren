@@ -2,15 +2,18 @@
 type Props = {
   title: string;
   full_screen?: boolean;
-  className?: string;
+  class?: string;
 };
-const { title = "Section", full_screen = false, className = "" } = Astro.props;
-const passedClass = (Astro.props as any).class ?? className ?? "";
+const {
+  title = "Section",
+  full_screen = false,
+  class: className = "",
+} = Astro.props;
 ---
 
 <section
   id={title.toLowerCase().replaceAll(" ", "")}
-  class={`${full_screen ? "min-h-[100svh]" : ""} px-4 py-10 w-full !overflow-x-hidden ${passedClass}`}
+  class={`${full_screen ? "min-h-[100svh]" : ""} px-4 py-10 w-full !overflow-x-hidden ${className}`}
 >
   <div class="w-full grid place-items-center">
     <h2 class="text-4xl md:text-6xl text-center font-pixel">

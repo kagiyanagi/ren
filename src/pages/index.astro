@@ -13,16 +13,12 @@ import {
   PROJECTS,
   GITHUB_REPO,
   GITHUB_USERNAME,
-  USE_PINNED_REPOS,
   type Project,
 } from "@/consts";
 import { fetchLatestCommitDate, fetchPinnedProjects } from "@/lib/github";
 
-let projects: readonly Project[] = PROJECTS;
-if (USE_PINNED_REPOS) {
-  const pinned = await fetchPinnedProjects(GITHUB_USERNAME);
-  if (pinned?.length) projects = pinned;
-}
+const projects: readonly Project[] =
+  (await fetchPinnedProjects(GITHUB_USERNAME)) ?? PROJECTS;
 
 const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
 ---
@@ -31,7 +27,7 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
   <Hero />
   <Section
     title="About me"
-    className={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center"}
+    class={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center"}
   >
     <div
       class="w-full grid place-items-center gap-4 grid-cols-1 sm:grid-cols-2"
@@ -63,12 +59,17 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
           Web development, IoT, Machine learning, Linux(Arch btw). I'm a big fan
           of anime (<a
             class="underline transition-all"
-            href="https://anilist.co/user/kagiyanagi/">anilist link</a
+            href="https://anilist.co/user/kagiyanagi/"
+            target="_blank"
+            rel="noopener noreferrer">anilist link</a
           >) and music, which both inspire my creativity. Core Android
           development: I love building custom ROMs and kernels. I've archived
           everything on my
-          <a class="underline transition-all" href="https://t.me/rensakashvani"
-            >Telegram channel</a
+          <a
+            class="underline transition-all"
+            href="https://t.me/rensakashvani"
+            target="_blank"
+            rel="noopener noreferrer">Telegram channel</a
           >
         </p>
         <p class="opacity-95">
@@ -130,7 +131,7 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
   </Section>
   <Section
     title="My projects"
-    className={"bg-gradient-to-b from-black/70 from-[5%] to-black via-black max-w-screen-2xl mx-auto items-center mb-12"}
+    class={"bg-gradient-to-b from-black/70 from-[5%] to-black via-black max-w-screen-2xl mx-auto items-center mb-12"}
   >
     <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
       {projects.map((project) => <ProjectCard {...project} />)}
@@ -138,7 +139,7 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
   </Section>
   <Section
     title="Contact me"
-    className={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center"}
+    class={"max-w-screen-2xl mx-auto flex flex-col gap-8 items-center"}
   >
     <div
       class="w-full grid place-items-center grid-cols-1 sm:grid-cols-2 gap-12 sm:gap-0"
@@ -155,21 +156,4 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
       </div>
     </div>
   </Section>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const origin = window.location.origin;
-      document.querySelectorAll("a").forEach((link) => {
-        if (!link.href) return;
-        try {
-          const url = new URL(link.href, origin);
-          if (url.origin !== origin) {
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-          }
-        } catch {
-          /* invalid href - leave alone */
-        }
-      });
-    });
-  </script>
 </Layout>

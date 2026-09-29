@@ -190,22 +190,6 @@ img {
   opacity: 0;
 }
 
-.custom-underscore-caret {
-  /* Hide the native caret so we can render a fake underscore. */
-  caret-color: transparent;
-  position: relative;
-}
-
-.fake-caret {
-  position: absolute;
-  color: rgb(255 255 255 / 0.9);
-  font-size: inherit;
-  line-height: inherit;
-  pointer-events: none;
-  animation: blink 1s step-end infinite;
-  user-select: none;
-}
-
 @keyframes blink {
   0%,
   50% {

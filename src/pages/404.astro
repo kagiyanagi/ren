@@ -30,8 +30,7 @@ import Layout from "@/layouts/Layout.astro";
         </a>
         <span class="mx-1 text-white/70">|</span>
         <a
-          id="refresh-link"
-          href="/"
+          href=""
           class="px-2 py-1 hover:bg-white hover:text-black focus-visible:bg-white focus-visible:text-black focus-visible:outline-none"
         >
           refresh
@@ -39,11 +38,4 @@ import Layout from "@/layouts/Layout.astro";
       </nav>
     </div>
   </section>
-  <script>
-    const refresh = document.getElementById("refresh-link");
-    refresh?.addEventListener("click", (e) => {
-      e.preventDefault();
-      window.location.reload();
-    });
-  </script>
 </Layout>
