@@ -1,8 +1,12 @@
 ---
 import BaseHead from "@/components/BaseHead.astro";
+import Boot from "@/components/Boot.astro";
+import CRT from "@/components/CRT.astro";
 import Navbar from "@/components/Navbar.astro";
 import Footer from "@/components/Footer.astro";
 import Notification from "@/components/Notification.astro";
+import Terminal from "@/components/Terminal.astro";
+import Extras from "@/components/Extras.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/consts";
 
 const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
@@ -14,9 +18,17 @@ const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
   </head>
 
   <body class="bg-black text-white tracking-wide !overflow-x-hidden">
+    <!--
+         ^#^   oh hey, a view-source enjoyer.
+               press ~ on the page. or don't. i'm a comment, not a cop.
+    -->
+    <Boot />
+    <CRT />
     <header class="md:fixed top-0 w-full z-[9999]"><Navbar /></header>
     <main class="md:pt-20"><slot /></main>
     <footer class="w-full bottom-0 overflow-x-hidden"><Footer /></footer>
     <Notification />
+    <Terminal />
+    <Extras />
   </body>
 </html>

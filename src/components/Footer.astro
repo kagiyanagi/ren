@@ -1,16 +1,12 @@
 ---
 import { GITHUB_REPO } from "@/consts";
-import BinaryBackground from "@/components/BinaryBackground.astro";
 const year = new Date().getFullYear();
 ---
 
 <section
   id="footer"
-  class="grid relative place-items-center text-center mt-4 bg-white/[0.001]"
+  class="grid relative place-items-center text-center mt-4 pt-16 bg-white/[0.001]"
 >
-  <div class="h-40 overflow-hidden absolute pointer-events-none">
-    <BinaryBackground />
-  </div>
   <a
     href={`https://github.com/${GITHUB_REPO}`}
     target="_blank"
@@ -19,6 +15,11 @@ const year = new Date().getFullYear();
   >
     Thanks for visiting! Make sure to give this a ✦ on GitHub.
   </a>
+  <p
+    id="my-time"
+    class="px-2 pt-3 mx-auto max-w-72 sm:max-w-full text-sm text-white/50"
+  >
+  </p>
   <p class="mb-10 py-3 px-2 mx-auto max-w-72 sm:max-w-full text-center">
     Copyleft &copy; {year}. Developed by me, with the theme concept by
     <a
@@ -26,6 +27,38 @@ const year = new Date().getFullYear();
       href="https://github.com/ArnavK-09"
       target="_blank"
       rel="noopener noreferrer">@ArnavK-09</a
+    >. <a class="hover:underline text-white/60" href="/humans.txt"
+      >Made by a human.</a
     >
   </p>
 </section>
+
+<script>
+  // My local time, and a rough guess at what I'm doing about it.
+  const el = document.getElementById("my-time")!;
+  const clock = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+  const doing = (h: number) =>
+    h < 6
+      ? "probably asleep. or debugging. same thing."
+      : h < 8
+        ? "waking up, barely."
+        : h < 14
+          ? "at school, pretending to pay attention."
+          : h < 18
+            ? "doing homework (lie)."
+            : h < 22
+              ? "coding, probably."
+              : "should be asleep. isn't.";
+  function tick() {
+    const parts = clock.formatToParts(new Date());
+    const h = Number(parts.find((p) => p.type === "hour")?.value);
+    el.textContent = `it's ${clock.format(new Date())} for me (IST) — ${doing(h)}`;
+  }
+  tick();
+  setInterval(tick, 30_000);
+</script>

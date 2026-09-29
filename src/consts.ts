@@ -67,3 +67,35 @@ export const NAV_LINKS: Array<{ title: string; href: string }> = [
     href: "https://x.com/kagiyanagi",
   },
 ];
+
+// Hero subtitle rotation. The first line is what ships in the HTML.
+export const TAGLINES = [
+  'I go by "kagiyanagi"\non the internet.',
+  "I build kernels\nfor fun.",
+  "I use Arch,\nbtw.",
+  "I should be\nstudying rn.",
+  "I mustn't\nrun away.",
+];
+
+// Hover notes on the tech pills. Missing entries just don't get one.
+export const TECH_NOTES: Record<string, string> = {
+  Astro: "this site runs on it",
+  "Tailwind CSS": "class soup, but tasty",
+  JavaScript: "[] + {} === ?",
+  Python: "import antigravity",
+  CSS: "centering divs since forever",
+  HTML: "yes it's a language. fight me",
+  C: "segmentation fault (core dumped)",
+  "C++": "template errors > my essays",
+  Bash: "rm -rf ~/regrets",
+  VIM: ":wq took me a week",
+  React: "useEffect(() => cry(), [])",
+  Git: "git push --force (sorry)",
+  Photoshop: "ctrl+z ×400",
+  Figma: "frames all the way down",
+  Pandas: "not the animal",
+  NumPy: "broadcasting, not podcasting",
+  Hyprland: "my config is longer than this site",
+  "Davinci Resolve": "render time: 3h 12m left",
+  Docker: "works on my machine™",
+};

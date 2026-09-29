@@ -54,6 +54,21 @@ const structuredData = [
 <link rel="icon" href="/muichiro.svg" type="image/svg+xml" />
 <meta name="generator" content={Astro.generator} />
 <link rel="sitemap" href="/sitemap-index.xml" />
+<link rel="author" href="/humans.txt" />
+
+<script is:inline>
+  // Runs before paint so the phosphor tint and boot screen never flash.
+  try {
+    const root = document.documentElement;
+    const phosphor = localStorage.getItem("phosphor");
+    if (phosphor) root.dataset.phosphor = phosphor;
+    if (
+      !sessionStorage.getItem("booted") &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      root.dataset.booting = "";
+  } catch {}
+</script>
 
 <link
   rel="preload"

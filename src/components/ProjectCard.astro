@@ -12,7 +12,13 @@ const { title, href, date, description } = Astro.props;
 ---
 
 <WindowCard>
-  <a href={href} target="_blank" rel="noopener noreferrer" class="block group">
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="block group"
+    data-project={title}
+  >
     <h3 class="text-xl font-medium text-white mb-2">
       <span class="text-white/70 mr-2">❯</span>
       {title}

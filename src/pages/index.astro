@@ -11,6 +11,7 @@ import House from "@/assets/house.gif";
 import {
   KNOWN_TECH,
   PROJECTS,
+  TECH_NOTES,
   GITHUB_REPO,
   GITHUB_USERNAME,
   type Project,
@@ -32,16 +33,20 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
     <div
       class="w-full grid place-items-center gap-4 grid-cols-1 sm:grid-cols-2"
     >
-      <div class="w-full flex justify-center">
-        <Image
-          alt="Leliel from Neon Genesis Evangelion. source:(http://anime.en.utf8art.com/arc/evangelion_190.html)"
-          src={VillainImg}
-          class="brightness-200 max-w-xs sm:max-w-sm md:max-w-md object-contain invert"
-        />
+      <div class="w-full flex justify-center" data-reveal>
+        <div class="ascii-shade flex">
+          <Image
+            alt="Leliel from Neon Genesis Evangelion. source:(http://anime.en.utf8art.com/arc/evangelion_190.html)"
+            src={VillainImg}
+            data-tip="the shadow is the real body."
+            class="brightness-200 max-w-xs sm:max-w-sm md:max-w-md object-contain invert hover:invert-0 transition-[filter] duration-1000"
+          />
+        </div>
       </div>
 
       <div
         class="w-full flex flex-col justify-center text-lg sm:text-xl gap-4 max-w-screen-md"
+        data-reveal
       >
         <h3
           class="text-2xl sm:text-4xl opacity-95 mb-4 flex items-center gap-4 flex-col sm:flex-row"
@@ -80,10 +85,20 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
         <p
           id="lastUpdated"
           class="text-zinc-400 text-xl custom-cursor-help"
-          title="This data is coming from my GitHub repository's latest commit."
+          data-tip="This data is coming from my GitHub repository's latest commit."
           data-commit={commitISO}
         >
           Last updated: loading…
+        </p>
+        <p
+          class="margin-note flex items-end gap-2 -mt-3 ml-6 rotate-[-3deg]"
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 70 40" class="w-10 -rotate-[70deg]"
+            ><path d="M5 34 C 20 30, 30 20, 34 6 M26 12 L34 4 L40 13"
+            ></path></svg
+          >
+          yes, to the millisecond. i was bored.
         </p>
 
         <script>
@@ -125,14 +140,23 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
   <Section title="Technologies i like" full_screen={false}>
     <div class="w-full grid place-items-center mb-12">
       <div class="w-full gap-4 flex flex-wrap max-w-2xl text-lg justify-center">
-        {KNOWN_TECH.map((x) => <Breadcrumb title={x} />)}
+        {KNOWN_TECH.map((x) => <Breadcrumb title={x} note={TECH_NOTES[x]} />)}
       </div>
+      <p class="margin-note mt-8 rotate-2" aria-hidden="true">
+        (hover them. each one has a confession.)
+      </p>
     </div>
   </Section>
   <Section
     title="My projects"
-    class={"bg-gradient-to-b from-black/70 from-[5%] to-black via-black max-w-screen-2xl mx-auto items-center mb-12"}
+    class={"max-w-screen-2xl mx-auto items-center mb-12"}
   >
+    <p
+      class="margin-note -mt-4 mb-6 mx-auto w-fit rotate-[-2deg]"
+      aria-hidden="true"
+    >
+      pinned straight from my github. try closing one. ↓
+    </p>
     <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
       {projects.map((project) => <ProjectCard {...project} />)}
     </div>
@@ -144,11 +168,12 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
     <div
       class="w-full grid place-items-center grid-cols-1 sm:grid-cols-2 gap-12 sm:gap-0"
     >
-      <div class="flex flex-col items-center">
+      <div class="ascii-shade flex">
         <Image
           alt="Mushroom Shop, A cozy little shop, run by a certain eccentric shopkeep. source:(https://www.newgrounds.com/art/view/stonestoryrpg/mushroom-shop)"
           src={House}
-          class="brightness-200 max-w-xs sm:max-w-sm"
+          data-tip="the shopkeep says hi."
+          class="brightness-200 max-w-xs sm:max-w-sm mix-blend-screen"
         />
       </div>
       <div class="w-full max-w-xl">

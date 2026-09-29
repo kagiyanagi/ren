@@ -1,0 +1,263 @@
+<canvas
+  id="crt"
+  class="fixed inset-0 -z-10 w-full h-full pointer-events-none"
+  aria-hidden="true"></canvas>
+
+<script>
+  // The whole-page background: a field of 0/1 glyphs drawn in one fragment
+  // shader. It reacts to scroll (parallax + fade) and to "fx" events from the
+  // easter eggs.
+  import { calm, type FxDetail } from "@/lib/fx";
+
+  const canvas = document.getElementById("crt") as HTMLCanvasElement;
+  const gl = canvas.getContext("webgl", { alpha: false, antialias: false });
+
+  const VERT = `attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }`;
+
+  const FRAG = `
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+    precision highp float;
+    #else
+    precision mediump float;
+    #endif
+    uniform vec2 uRes, uCell;
+    uniform float uTime, uScroll, uIntensity, uGlitch, uScale, uCount;
+    uniform vec3 uModes; // x: matrix, y: alert, z: sleep
+    uniform sampler2D uAtlas;
+
+    float hash(vec2 p) {
+      p = fract(p * vec2(123.34, 456.21));
+      p += dot(p, p + 45.32);
+      return fract(p.x * p.y);
+    }
+
+    vec2 cellOf(vec2 s) { return floor((s + vec2(0.0, uScroll)) / uCell); }
+
+    float ink(vec2 s, float chaos) {
+      vec2 cell = cellOf(s);
+      vec2 f = fract((s + vec2(0.0, uScroll)) / uCell);
+      float r = hash(cell);
+      float rate = mix(0.12, 2.6, r * r * r) + chaos * 9.0 + uModes.x * 7.0;
+      float tick = floor(uTime * rate + r * 17.0);
+      float idx = step(0.5, hash(cell + tick));
+      if (hash(cell - tick * 0.37) < max(chaos, uModes.x))
+        idx = 2.0 + floor(hash(cell + tick * 1.3) * (uCount - 2.0));
+      return texture2D(uAtlas, vec2((idx + f.x) / uCount, f.y)).a;
+    }
+
+    void main() {
+      vec2 s = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
+
+      // Horizontal tear, mostly idle until uGlitch spikes.
+      float row = floor(s.y / (14.0 * uScale));
+      float band = step(0.93, hash(vec2(row, floor(uTime * 14.0)))) * uGlitch;
+      s.x += band * (hash(vec2(row, floor(uTime * 31.0))) - 0.5) * 140.0 * uScale;
+
+      vec2 cell = cellOf(s);
+      vec2 c = (cell + 0.5) * uCell - vec2(0.0, uScroll);
+      float r = hash(cell + 7.1);
+
+      float light = (0.03 + 0.05 * r) * uIntensity;
+      float w = sin((c.x * 0.0035 + c.y * 0.0022) / uScale - uTime * 0.45
+        + sin(c.y * 0.0015 / uScale + uTime * 0.13) * 2.5);
+      light += smoothstep(0.8, 1.0, w) * 0.1 * uIntensity;
+
+      // Matrix rain: per-column falling heads with fading tails.
+      float rows = uRes.y / uCell.y;
+      float colR = hash(vec2(cell.x, 91.7));
+      float head = mod(uTime * mix(5.0, 16.0, colR) + colR * 97.0, rows * 1.7);
+      float dist = head - floor(c.y / uCell.y);
+      float rain = dist < 0.0 ? 0.0 : (dist < 1.0 ? 1.2 : exp(-dist * 0.16) * 0.7);
+      light = mix(light, rain, uModes.x);
+
+      // Alert: pulsing hex grid over everything.
+      vec2 hp = s / (46.0 * uScale);
+      vec2 hr = vec2(1.0, 1.7320508);
+      vec2 ha = mod(hp, hr) - hr * 0.5;
+      vec2 hb = mod(hp - hr * 0.5, hr) - hr * 0.5;
+      vec2 gv = dot(ha, ha) < dot(hb, hb) ? ha : hb;
+      float edge = 0.5 - max(dot(abs(gv), normalize(hr)), abs(gv).x);
+      float grid = smoothstep(0.06, 0.0, edge) * (0.55 + 0.45 * sin(uTime * 7.0 - length(hp) * 0.3));
+      light = light * (1.0 + uModes.y * 1.5);
+
+      light *= 1.0 - uModes.z * (0.75 - 0.15 * sin(uTime * 1.2));
+
+      float ab = (1.0 + band * 8.0 + uModes.y * 3.0) * uScale;
+      vec3 col = vec3(ink(s + vec2(ab, 0.0), band), ink(s, band), ink(s - vec2(ab, 0.0), band)) * light;
+      col += vec3(1.0) * grid * uModes.y * 0.5;
+
+      vec2 q = gl_FragCoord.xy / uRes - 0.5;
+      col *= 1.0 - dot(q, q) * 0.9;
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  function compile(type: number, src: string) {
+    const sh = gl!.createShader(type)!;
+    gl!.shaderSource(sh, src);
+    gl!.compileShader(sh);
+    if (!gl!.getShaderParameter(sh, gl!.COMPILE_STATUS))
+      throw new Error(gl!.getShaderInfoLog(sh) ?? "shader failed");
+    return sh;
+  }
+
+  // Glyph atlas: "0", "1", then noise glyphs for glitches and the rain.
+  const GLYPHS = "01アイウエオカキクケコサシスセソタチツテト#$%&*+<>/=?";
+  async function atlas() {
+    await document.fonts.load('48px "VCR"').catch(() => {});
+    const W = 40;
+    const H = 64;
+    const c = document.createElement("canvas");
+    c.width = W * GLYPHS.length;
+    c.height = H;
+    const ctx = c.getContext("2d")!;
+    ctx.font = `${H * 0.72}px "VCR", monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#fff";
+    [...GLYPHS].forEach((ch, i) =>
+      ctx.fillText(ch, i * W + W / 2, H * 0.55, W * 0.82),
+    );
+    return c;
+  }
+
+  async function start() {
+    if (!gl) return canvas.remove();
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array([-1, -1, 3, -1, -1, 3]),
+      gl.STATIC_DRAW,
+    );
+    const loc = gl.getAttribLocation(prog, "p");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+    gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      await atlas(),
+    );
+    for (const [k, v] of [
+      [gl.TEXTURE_MIN_FILTER, gl.LINEAR],
+      [gl.TEXTURE_MAG_FILTER, gl.LINEAR],
+      [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE],
+      [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE],
+    ])
+      gl.texParameteri(gl.TEXTURE_2D, k, v);
+
+    const u = (name: string) => gl.getUniformLocation(prog, name);
+    const U = {
+      res: u("uRes"),
+      cell: u("uCell"),
+      time: u("uTime"),
+      scroll: u("uScroll"),
+      intensity: u("uIntensity"),
+      glitch: u("uGlitch"),
+      scale: u("uScale"),
+      count: u("uCount"),
+      modes: u("uModes"),
+    };
+    gl.uniform1f(U.count, GLYPHS.length);
+
+    const still = calm();
+    // ponytail: render scale only ever steps down (1.5 -> ~1 -> ~0.65) on slow
+    // frames and never back up; a real quality ladder if people complain.
+    let scale = Math.min(devicePixelRatio || 1, 1.5);
+    let cssCell = 22;
+    function resize() {
+      canvas.width = Math.round(innerWidth * scale);
+      canvas.height = Math.round(innerHeight * scale);
+      cssCell = Math.min(26, Math.max(18, innerWidth / 60));
+      gl!.viewport(0, 0, canvas.width, canvas.height);
+    }
+    resize();
+    addEventListener("resize", () => {
+      resize();
+      if (still) draw(0, 0);
+    });
+
+    const now = () => performance.now() / 1000;
+
+    const modes = { matrix: [0, 0], alert: [0, 0], sleep: [0, 0] }; // [value, target]
+    let glitch = 0;
+    addEventListener("fx", ({ detail: d }: CustomEvent<FxDetail>) => {
+      if (d.kind === "glitch") glitch = 1;
+      else modes[d.mode][1] = d.on ? 1 : 0;
+    });
+
+    let nextGlitch = now() + 8;
+    let slow = 0;
+    let last = now();
+
+    function draw(t: number, dt: number) {
+      const docH = document.documentElement.scrollHeight;
+      const top = 1 - scrollY / innerHeight;
+      const bottom = 1 - (docH - scrollY - innerHeight) / 400;
+      const intensity = Math.max(0.3, Math.min(1, Math.max(top, bottom)));
+
+      for (const m of Object.values(modes))
+        m[0] += (m[1] - m[0]) * Math.min(1, dt * 3);
+      glitch = Math.max(0, glitch - dt * 3.5);
+      if (!still && t > nextGlitch) {
+        glitch = Math.max(glitch, 0.6);
+        nextGlitch = t + 7 + Math.random() * 10;
+      }
+
+      gl!.uniform2f(U.res, canvas.width, canvas.height);
+      gl!.uniform2f(U.cell, cssCell * 0.62 * scale, cssCell * scale);
+      gl!.uniform1f(U.time, t % 600);
+      gl!.uniform1f(U.scroll, scrollY * 0.4 * scale);
+      gl!.uniform1f(U.intensity, intensity);
+      gl!.uniform1f(U.glitch, glitch);
+      gl!.uniform1f(U.scale, scale);
+      gl!.uniform3f(U.modes, modes.matrix[0], modes.alert[0], modes.sleep[0]);
+      gl!.drawArrays(gl!.TRIANGLES, 0, 3);
+    }
+
+    if (still) {
+      draw(3, 0);
+      addEventListener("scroll", () => draw(3, 0), { passive: true });
+      return;
+    }
+
+    let raf = 0;
+    function frame() {
+      raf = requestAnimationFrame(frame);
+      const t = now();
+      const dt = Math.min(0.1, t - last);
+      last = t;
+      // Twenty-ish slow frames in a row: drop resolution once.
+      slow = dt > 0.024 ? slow + 1 : 0;
+      if (slow > 20 && scale > 0.75) {
+        scale *= 0.66;
+        slow = 0;
+        resize();
+      }
+      draw(t, dt);
+    }
+    frame();
+    document.addEventListener("visibilitychange", () => {
+      cancelAnimationFrame(raf);
+      if (!document.hidden) {
+        last = now();
+        frame();
+      }
+    });
+  }
+
+  start().catch((err) => {
+    console.warn("[crt] shader off:", err);
+    canvas.remove();
+  });
+</script>

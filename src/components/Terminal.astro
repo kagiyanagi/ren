@@ -1,0 +1,374 @@
+<button
+  id="term-open"
+  type="button"
+  aria-keyshortcuts="`"
+  aria-label="Open terminal"
+  class="fixed bottom-4 right-4 z-40 px-2 py-1 text-xs bg-black/70 text-white/50 border border-white/20 hover:text-black hover:bg-white hover:border-white transition-colors"
+>
+  [~] terminal
+</button>
+
+<dialog
+  id="term"
+  aria-label="Terminal"
+  class="m-0 p-0 w-full max-w-none h-[min(60svh,520px)] max-h-none bg-black/90 open:flex flex-col backdrop:bg-black/40 text-sm sm:text-base"
+>
+  <div
+    class="flex justify-between items-center px-4 py-1 bg-current select-none"
+  >
+    <span class="text-black">guest@kagiyanagi: ~ — vcr-sh</span>
+    <button
+      type="button"
+      data-close
+      class="text-black hover:bg-black hover:text-white px-1"
+      aria-label="Close terminal">[x]</button
+    >
+  </div>
+  <div
+    id="term-out"
+    role="log"
+    class="flex-1 overflow-y-auto px-4 pt-3 whitespace-pre-wrap break-words leading-snug"
+  >
+  </div>
+  <form id="term-form" class="flex gap-2 px-4 py-3" autocomplete="off">
+    <label for="term-in" id="term-prompt" class="shrink-0 opacity-70"
+      >guest@kagiyanagi:~$</label
+    >
+    <input
+      id="term-in"
+      class="flex-1 min-w-0 bg-transparent outline-none [caret-shape:block]"
+      spellcheck="false"
+      autocapitalize="off"
+      enterkeyhint="send"
+    />
+  </form>
+</dialog>
+
+<script>
+  import { NAV_LINKS, SITE_DESCRIPTION } from "@/consts";
+  import {
+    PHOSPHORS,
+    angel,
+    degauss,
+    matrix,
+    nuke,
+    pick,
+    setPhosphor,
+    sl,
+    typing,
+  } from "@/lib/fx";
+
+  const dlg = document.getElementById("term") as HTMLDialogElement;
+  const out = document.getElementById("term-out")!;
+  const form = document.getElementById("term-form") as HTMLFormElement;
+  const input = document.getElementById("term-in") as HTMLInputElement;
+  const promptEl = document.getElementById("term-prompt")!;
+  const PROMPT = "guest@kagiyanagi:~$";
+  const history: string[] = [];
+  const openedAt = Date.now();
+  let hi = 0;
+  let inVim = false;
+
+  function print(text = "", cls = "") {
+    const el = document.createElement("div");
+    el.className = cls;
+    el.textContent = text;
+    out.append(el);
+    out.scrollTop = out.scrollHeight;
+    return el;
+  }
+
+  function printLink(label: string, href: string) {
+    const a = document.createElement("a");
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.className = "underline hover:no-underline";
+    a.textContent = href.replace(/^https?:\/\//, "");
+    const row = print(`  ${label.padEnd(12)}`);
+    row.append(a);
+  }
+
+  function open() {
+    if (dlg.open) return;
+    dlg.showModal();
+    input.focus();
+    if (out.childElementCount) return;
+    let last: string | null = null;
+    try {
+      last = localStorage.getItem("lastLogin");
+      localStorage.setItem("lastLogin", new Date().toString());
+    } catch {}
+    print(
+      "vcr-sh 0.1 — type `help` to look around. esc to close.",
+      "opacity-60",
+    );
+    print(
+      last
+        ? `last login: ${new Date(last).toLocaleString()} — welcome back.`
+        : "last login: never. hi, first-timer.",
+      "opacity-60",
+    );
+  }
+  const close = () => dlg.close();
+
+  const FORTUNES = [
+    "God's in his heaven. All's right with the world.",
+    "It works on my machine.",
+    "There are 10 kinds of people: those who read binary, and those who don't.",
+    "Man fears the darkness, and so he scrapes away at the edges of it with fire.",
+    "The best code is no code at all.",
+    "Have you tried turning it off and on again? (try `reboot`)",
+    "A kernel panic a day keeps the boredom away.",
+    "Anywhere can be paradise, as long as you have the will to live.",
+  ];
+
+  const SECTIONS: Record<string, string> = {
+    "~": "",
+    "/": "",
+    "..": "",
+    about: "aboutme",
+    tech: "technologiesilike",
+    projects: "myprojects",
+    contact: "contactme",
+  };
+
+  const HIDDEN = new Set(
+    "sudo rm vim nano emacs sl coffee sync ping exit reboot fortune make rei asuka".split(
+      " ",
+    ),
+  );
+
+  type Cmd = (args: string[]) => string | void;
+  const cmds: Record<string, Cmd> = {
+    help: () =>
+      [
+        "commands:",
+        "  " +
+          Object.keys(cmds)
+            .filter((k) => !HIDDEN.has(k))
+            .join("  "),
+        "",
+        "there are a few more. you'll find them.",
+      ].join("\n"),
+    whoami: () =>
+      "guest. this machine belongs to aman (a.k.a. kagiyanagi / ren / aqua).",
+    about: () => SITE_DESCRIPTION,
+    ls: (a) =>
+      (a.some((x) => x.startsWith("-") && x.includes("a"))
+        ? ".  ..  .hidden  "
+        : "") + "about.txt  projects/  secrets.txt",
+    cat: ([f = ""]) =>
+      ({
+        "about.txt": SITE_DESCRIPTION,
+        "secrets.txt": "cat: secrets.txt: Permission denied. (nice try)",
+        ".hidden":
+          "↑ ↑ ↓ ↓ ← → ← → b a\n\n(not in here. out there, on the page.)",
+        "projects/": "cat: projects/: Is a directory. try `projects`.",
+      })[f] ?? `cat: ${f}: No such file or directory`,
+    cd: ([d = "~"]) => {
+      const id = SECTIONS[d] ?? SECTIONS[d.replace(/\/$/, "")];
+      if (id === undefined)
+        return `cd: ${d}: No such file or directory\ntry: ${Object.keys(SECTIONS).slice(3).join(", ")}`;
+      close();
+      // Off the homepage (e.g. the 404), every section lives back at "/".
+      if (location.pathname !== "/") location.href = id ? `/#${id}` : "/";
+      else if (id)
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      else scrollTo({ top: 0, behavior: "smooth" });
+    },
+    projects: () => {
+      const cards =
+        document.querySelectorAll<HTMLAnchorElement>("a[data-project]");
+      if (!cards.length) return "no projects on this page. try `cd projects`.";
+      cards.forEach((a) => printLink(a.dataset.project!, a.href));
+    },
+    socials: () => NAV_LINKS.forEach((l) => printLink(l.title, l.href)),
+    open: ([name = ""]) => {
+      const l = NAV_LINKS.find(
+        (l) => l.title.toLowerCase() === name.toLowerCase(),
+      );
+      if (!l)
+        return `open: where? try: ${NAV_LINKS.map((l) => l.title.toLowerCase()).join(", ")}`;
+      window.open(l.href, "_blank", "noopener");
+      return `opening ${l.title}…`;
+    },
+    neofetch: () => {
+      const phosphor = document.documentElement.dataset.phosphor ?? "white";
+      const mins = Math.max(1, Math.round((Date.now() - openedAt) / 60000));
+      const logo = [
+        "       /\\       ",
+        "      /  \\      ",
+        "     /\\   \\     ",
+        "    /      \\    ",
+        "   /   ,,   \\   ",
+        "  /   |  |  -\\  ",
+        " /_-''    ''-_\\ ",
+        "                ",
+        "                ",
+        "                ",
+      ];
+      const info = [
+        "guest@kagiyanagi",
+        "----------------",
+        "OS: Arch Linux x86_64 (btw)",
+        "Host: kagiyanagi.vercel.app",
+        "Kernel: aquamarine",
+        `Uptime: ${mins} min${mins > 1 ? "s" : ""}`,
+        "Shell: vcr-sh 0.1",
+        "WM: Hyprland",
+        `Phosphor: ${phosphor}`,
+        `Sync ratio: ${(38 + Math.random() * 6).toFixed(1)}%`,
+      ];
+      return logo.map((l, i) => l + "  " + info[i]).join("\n");
+    },
+    theme: ([p]) => {
+      const now = document.documentElement.dataset.phosphor ?? "white";
+      if (!p) return `phosphor: ${now}\noptions: ${PHOSPHORS.join(", ")}`;
+      if (!(PHOSPHORS as readonly string[]).includes(p))
+        return `theme: no phosphor called '${p}'. options: ${PHOSPHORS.join(", ")}`;
+      setPhosphor(p);
+      return `phosphor set to ${p}. it sticks, too.`;
+    },
+    matrix: () => {
+      matrix();
+      return "wake up, neo…";
+    },
+    degauss: () => {
+      degauss();
+      return "*THUNK*";
+    },
+    fortune: () => pick(FORTUNES),
+    date: () => new Date().toString(),
+    echo: (a) => a.join(" "),
+    history: () =>
+      history.map((h, i) => `${String(i + 1).padStart(4)}  ${h}`).join("\n"),
+    clear: () => void out.replaceChildren(),
+    exit: close,
+
+    // not listed in help
+    sudo: (a) => {
+      if (/^rm -rf \/\*?$/.test(a.join(" "))) {
+        close();
+        nuke();
+        return;
+      }
+      return "guest is not in the sudoers file. This incident will be reported.";
+    },
+    rm: (a) =>
+      a.includes("-rf") && a.some((x) => x === "/" || x === "/*")
+        ? "rm: it is dangerous to operate recursively on '/'\nrm: (sudo exists, if you're brave)"
+        : "rm: refusing to delete anything from a portfolio.",
+    vim: () => {
+      inVim = true;
+      promptEl.textContent = "-- NORMAL --";
+      return "you are in vim now. good luck.";
+    },
+    nano: () => "honestly? respectable.",
+    emacs: () => "emacs: command not found. this is a vim household.",
+    sl: () => {
+      close();
+      sl();
+    },
+    make: ([t]) =>
+      t === "love"
+        ? "make: *** No rule to make target 'love'. Stop."
+        : "make: *** No targets specified and no makefile found. Stop.",
+    coffee: () => "418 I'm a teapot.",
+    ping: () => "pong.",
+    sync: () => {
+      close();
+      angel();
+    },
+    reboot: () => {
+      try {
+        sessionStorage.removeItem("booted");
+      } catch {}
+      location.reload();
+    },
+    rei: () => "…",
+    asuka: () => "anta baka?!",
+  };
+
+  function vim(cmd: string) {
+    if (cmd === ":q")
+      return print("E37: No write since last change (add ! to override)");
+    if (/^:(q!|wq!?|x)$/.test(cmd)) {
+      inVim = false;
+      promptEl.textContent = PROMPT;
+      return print("you escaped vim. put that on your resume.");
+    }
+    print(
+      cmd.startsWith(":")
+        ? `E492: Not an editor command: ${cmd.slice(1)}`
+        : "-- you're in NORMAL mode. try :q --",
+    );
+  }
+
+  function run(raw: string) {
+    const cmd = raw.trim();
+    print(`${promptEl.textContent} ${raw}`, "opacity-60");
+    input.value = "";
+    if (!cmd) return;
+    history.push(cmd);
+    hi = history.length;
+    if (inVim) return vim(cmd);
+    const [name, ...args] = cmd.split(/\s+/);
+    const fn =
+      Object.hasOwn(cmds, name.toLowerCase()) && cmds[name.toLowerCase()];
+    if (!fn) {
+      const guess = Object.keys(cmds).find(
+        (k) => !HIDDEN.has(k) && k.startsWith(name[0]),
+      );
+      return print(
+        `${name}: command not found.${guess ? ` did you mean \`${guess}\`?` : ""}`,
+      );
+    }
+    const res = fn(args);
+    if (typeof res === "string") print(res);
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    run(input.value);
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+      hi = Math.max(
+        0,
+        Math.min(history.length, hi + (e.key === "ArrowUp" ? -1 : 1)),
+      );
+      input.value = history[hi] ?? "";
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      const [head, ...rest] = input.value.split(" ");
+      const hits = rest.length
+        ? []
+        : Object.keys(cmds).filter((k) => !HIDDEN.has(k) && k.startsWith(head));
+      if (hits.length === 1) input.value = hits[0] + " ";
+      else if (hits.length) print(hits.join("  "), "opacity-60");
+    } else if (e.ctrlKey && e.key === "l") {
+      e.preventDefault();
+      out.replaceChildren();
+    } else if (e.ctrlKey && e.key === "c") {
+      print(`${promptEl.textContent} ${input.value}^C`, "opacity-60");
+      input.value = "";
+    }
+  });
+
+  addEventListener("keydown", (e) => {
+    if ((e.key === "`" || e.key === "~") && !dlg.open && !typing(e.target)) {
+      e.preventDefault();
+      open();
+    }
+  });
+  document.getElementById("term-open")!.addEventListener("click", open);
+  dlg.querySelector("[data-close]")!.addEventListener("click", close);
+  // Clicking the dimmed page (the ::backdrop) closes it too.
+  dlg.addEventListener("click", (e) => {
+    const r = dlg.getBoundingClientRect();
+    if (e.clientY > r.bottom || e.clientY < r.top) close();
+  });
+</script>

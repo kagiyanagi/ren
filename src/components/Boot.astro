@@ -1,0 +1,83 @@
+<div id="boot" aria-hidden="true">
+  <div class="boot-half"></div>
+  <div class="boot-half"></div>
+  <div class="boot-line"></div>
+  <pre
+    id="boot-log"
+    class="absolute inset-0 p-5 sm:p-8 text-xs sm:text-sm leading-relaxed text-white/85 whitespace-pre-wrap">
+  </pre>
+  <p class="absolute bottom-5 right-5 text-xs text-white/40">
+    press any key to skip
+  </p>
+</div>
+
+<script>
+  // Only runs when BaseHead's inline check set data-booting (first visit this
+  // session, motion allowed). The CSS keeps the overlay up until then.
+  import { sleep } from "@/lib/fx";
+
+  const root = document.documentElement;
+  const log = document.getElementById("boot-log")!;
+  let skip = false;
+
+  function visits() {
+    try {
+      const n = Number(localStorage.getItem("visits") || 0) + 1;
+      localStorage.setItem("visits", String(n));
+      return n;
+    } catch {
+      return 1;
+    }
+  }
+
+  async function type(line: string, speed = 6) {
+    for (let i = 0; i < line.length && !skip; i += 3) {
+      log.textContent += line.slice(i, i + 3);
+      await sleep(speed);
+    }
+    if (skip) return;
+    log.textContent += "\n";
+  }
+
+  async function boot() {
+    const n = visits();
+    log.textContent = "";
+    const lines: Array<[string, number]> = [
+      ["KGY-BIOS v0.1.7  (c) kagiyanagi. all rights reversed.", 90],
+      ["CPU: overclocked (aquamarine kernel)  ....  OK", 60],
+      ["MEM: 640K ought to be enough for anybody  ....  OK", 120],
+      ["", 20],
+      ["booting MAGI system", 80],
+      ["  MELCHIOR-1  ........  ONLINE", 50],
+      ["  BALTHASAR-2 ........  ONLINE", 50],
+      ["  CASPER-3    ........  ONLINE  (she's moody today)", 140],
+      ["mounting /home/ren  ....  OK", 60],
+      ["starting portfolio.service  ....  OK", 180],
+      ["", 20],
+      [n > 1 ? `> welcome back. visit #${n}.` : "> hello, stranger.", 360],
+    ];
+    for (const [line, pause] of lines) {
+      if (skip) break;
+      await type(line);
+      await sleep(pause);
+    }
+    root.dataset.booting = "off";
+    root.classList.add("power-on");
+    await sleep(700);
+    delete root.dataset.booting;
+    root.classList.remove("power-on");
+    try {
+      sessionStorage.setItem("booted", "1");
+    } catch {}
+    dispatchEvent(new Event("booted"));
+  }
+
+  if ("booting" in root.dataset) {
+    const skipIt = () => (skip = true);
+    addEventListener("keydown", skipIt, { once: true });
+    addEventListener("pointerdown", skipIt, { once: true });
+    boot();
+  } else {
+    document.getElementById("boot")?.remove();
+  }
+</script>

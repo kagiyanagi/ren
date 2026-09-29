@@ -1,12 +1,17 @@
 ---
 type Props = {
   title: string;
+  note?: string;
 };
-const { title = "Title" } = Astro.props;
+const { title = "Title", note } = Astro.props;
+// Stuck on by hand: a small tilt derived from the title, so it's stable per build.
+const tilt = ([...title].reduce((a, c) => a + c.charCodeAt(0), 0) % 7) - 3;
 ---
 
 <div
-  class="bg-white flex items-center justify-center leading-none pt-2 pb-1 text-center select-none rounded-2xl px-5 font-semibold text-black w-fit"
+  data-tip={note}
+  style={`--tilt: ${tilt * 0.8}deg`}
+  class="sticker bg-white flex items-center justify-center leading-none pt-2 pb-1 text-center select-none rounded-2xl px-5 font-semibold text-black w-fit"
 >
   <span>{title}</span>
 </div>

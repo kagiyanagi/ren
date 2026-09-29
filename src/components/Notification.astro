@@ -7,11 +7,12 @@
 
 <script type="module">
   const root = document.getElementById("__notification_root");
-  const bgMap = {
-    success: "bg-emerald-700",
-    error: "bg-rose-600",
-    warning: "bg-amber-700",
-    info: "bg-slate-700",
+  // systemd-style status tags, because everything here is a terminal.
+  const tags = {
+    success: ["[  OK  ]", "text-emerald-400"],
+    error: ["[FAILED]", "text-rose-400"],
+    warning: ["[ WARN ]", "text-amber-300"],
+    info: ["[ INFO ]", "text-sky-300"],
   };
 
   function hide(node) {
@@ -22,12 +23,15 @@
   window.showNotification = function (message, type = "info", ttl = 4000) {
     const el = document.createElement("div");
     el.className =
-      "notify-item pointer-events-auto max-w-xl w-full mx-auto rounded-md px-4 py-2 mb-2 text-sm shadow-lg flex items-center gap-3 justify-between";
-    el.classList.add(bgMap[type] || bgMap.info);
+      "notify-item pointer-events-auto max-w-xl w-full mx-auto bg-black/90 border border-white/70 px-4 py-2 mb-2 text-sm flex items-center gap-3 justify-between";
     el.setAttribute("role", "status");
 
+    const [tag, tone] = tags[type] || tags.info;
+    const label = document.createElement("span");
+    label.textContent = tag;
+    label.className = `${tone} mr-3 whitespace-pre`;
     const txt = document.createElement("div");
-    txt.textContent = message;
+    txt.append(label, message);
     txt.className = "text-white";
 
     const close = document.createElement("button");

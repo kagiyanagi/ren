@@ -52,6 +52,11 @@ const labelClass = "text-white/70 text-sm";
         maxlength="3500"
         required
         class={`${inputClass} resize-none`}></textarea>
+      <span
+        id="msg-count"
+        class="self-end text-xs text-white/40 tabular-nums"
+        aria-live="polite">0 / 3500</span
+      >
     </div>
     <button
       type="submit"
@@ -67,6 +72,7 @@ const labelClass = "text-white/70 text-sm";
     const emailEl = document.getElementById("email");
     const msgEl = document.getElementById("message");
     const sendBtn = document.getElementById("send-btn");
+    const countEl = document.getElementById("msg-count");
     const bell = new Audio("/terminal_bell.mp3");
     // Matches the server's per-client window.
     const COOLDOWN_MS = 30_000;
@@ -86,6 +92,11 @@ const labelClass = "text-white/70 text-sm";
       el.addEventListener("keydown", (event) => {
         if (event.key === "Backspace" && !el.value) bell.play().catch(() => {});
       });
+    });
+
+    msgEl.addEventListener("input", () => {
+      const n = msgEl.value.length;
+      countEl.textContent = `${n} / 3500${n > 3300 ? " — okay, essay mode" : ""}`;
     });
 
     const focusNextOnEnter = (current, next) => {
@@ -115,7 +126,12 @@ const labelClass = "text-white/70 text-sm";
       if (sending) return;
       sending = true;
       sendBtn.disabled = true;
-      sendBtn.textContent = "Sending...";
+      const spin = "|/-\\";
+      let frame = 0;
+      sendBtn.textContent = "[|] transmitting";
+      const spinner = setInterval(() => {
+        sendBtn.textContent = `[${spin[++frame % 4]}] transmitting`;
+      }, 90);
       try {
         const resp = await fetch("/api/send-message", {
           method: "POST",
@@ -143,6 +159,7 @@ const labelClass = "text-white/70 text-sm";
         }
         window.showNotification("Message sent successfully!", "success");
         form.reset();
+        countEl.textContent = "0 / 3500";
         cooldownUntil = Date.now() + COOLDOWN_MS;
       } catch (error) {
         console.error("Error sending message:", error);
@@ -151,6 +168,7 @@ const labelClass = "text-white/70 text-sm";
           "error",
         );
       } finally {
+        clearInterval(spinner);
         sending = false;
         sendBtn.disabled = false;
         sendBtn.textContent = "Send Message";

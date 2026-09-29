@@ -1,38 +1,156 @@
 ---
 import { Image } from "astro:assets";
 import HeroImg from "@/assets/hero.png";
-import { SITE_TITLE } from "@/consts";
-import BinaryBackground from "@/components/BinaryBackground.astro";
+import { SITE_TITLE, TAGLINES } from "@/consts";
 ---
 
-<div class="relative">
-  <BinaryBackground class="absolute inset-0 z-0 h-[100svh]" />
-  <div class="terminal-overlay" aria-hidden="true"></div>
-
-  <section
-    class="relative z-10 overflow-hidden min-h-[100svh] w-full grid items-center mb-12 grid-cols-1 sm:grid-cols-2"
-    id="hero"
+<section
+  class="relative z-10 overflow-hidden min-h-[100svh] w-full grid items-center mb-12 grid-cols-1 sm:grid-cols-2"
+  id="hero"
+>
+  <div
+    class="hero-drift text-center -mb-40 sm:mb-0 terminal-flicker px-6 py-8"
+    style="--depth: -1"
   >
-    <div
-      class="text-center -mb-40 sm:mb-0 terminal-flicker terminal-glow px-6 py-8"
+    <h1
+      id="hero-title"
+      class="font-bold text-5xl sm:text-8xl font-pixel"
+      aria-label={SITE_TITLE}
     >
-      <h1 class="font-bold text-5xl sm:text-8xl font-pixel">
-        {`<${SITE_TITLE} />`}
-      </h1>
-      <p class="text-xl sm:text-4xl opacity-95 inline">
-        I go by "kagiyanagi"
-        <br />
-        on the internet.
-        <span class="blinking-cursor">_</span>
-      </p>
-    </div>
+      {`<${SITE_TITLE} />`}
+    </h1>
+    <p class="text-xl sm:text-4xl opacity-95 min-h-[2lh]">
+      <span id="tagline" class="whitespace-pre-line">{TAGLINES[0]}</span><span
+        class="blinking-cursor">_</span
+      >
+    </p>
+  </div>
 
-    <div class="w-full flex items-center justify-center sm:justify-end">
+  <div
+    class="hero-drift relative w-full flex items-center justify-center sm:justify-end"
+    style="--depth: 1"
+  >
+    <button
+      type="button"
+      id="shinji"
+      aria-label="Poke Shinji"
+      class="ascii-shade relative block focus-visible:outline-dashed focus-visible:outline-1 focus-visible:outline-white"
+    >
       <Image
         alt="Shinji Ikari from Neon Genesis Evangelion. source:(http://anime.en.utf8art.com/arc/evangelion_28.html)"
         src={HeroImg}
         class="brightness-200 invert h-full w-auto max-w-full"
+        loading="eager"
       />
-    </div>
-  </section>
-</div>
+      <span id="shinji-says" class="speech" role="status"></span>
+      <span
+        class="margin-note absolute hidden lg:flex items-center gap-2 right-[88%] bottom-[18%] whitespace-nowrap -rotate-3"
+        aria-hidden="true"
+      >
+        not me. (but also kinda me)
+        <svg viewBox="0 0 70 40" class="w-14 rotate-12"
+          ><path d="M3 30 C 18 8, 40 4, 64 14 M55 6 L65 14 L54 20"></path></svg
+        >
+      </span>
+    </button>
+  </div>
+</section>
+
+<script>
+  import { TAGLINES } from "@/consts";
+  import { calm, fx, pick, scramble, sleep } from "@/lib/fx";
+
+  const title = document.getElementById("hero-title")!;
+  const tagline = document.getElementById("tagline")!;
+  const cursor = tagline.nextElementSibling!;
+  const hero = document.getElementById("hero")!;
+  const TITLE = title.textContent!.trim();
+
+  // Decode the title once the boot screen is out of the way.
+  const decode = () => scramble(title, TITLE, 1100);
+  if ("booting" in document.documentElement.dataset)
+    addEventListener("booted", decode, { once: true });
+  else decode();
+
+  if (!calm()) {
+    // Every so often the title slips into one of the aliases for a beat.
+    const alias = async () => {
+      await sleep(9000 + Math.random() * 9000);
+      title.classList.add("glitching");
+      fx({ kind: "glitch" });
+      await scramble(title, pick(["<Ren />", "<Aqua />", "<????/>"]), 250);
+      await sleep(260);
+      await scramble(title, TITLE, 300);
+      title.classList.remove("glitching");
+      alias();
+    };
+    alias();
+
+    // Typewriter that occasionally fat-fingers a key and fixes it.
+    const NEAR = "qwertyuiopasdfghjklzxcvbnm";
+    const typeLine = async (text: string) => {
+      for (const ch of text) {
+        if (/[a-z]/.test(ch) && Math.random() < 0.05) {
+          tagline.textContent += pick([...NEAR]);
+          await sleep(160 + Math.random() * 120);
+          await sleep(220);
+          tagline.textContent = tagline.textContent!.slice(0, -1);
+          await sleep(90);
+        }
+        tagline.textContent += ch;
+        await sleep(ch === "\n" ? 180 : 45 + Math.random() * 70);
+      }
+    };
+    const loop = async (i: number) => {
+      await sleep(5500);
+      cursor.parentElement!.classList.add("typing");
+      while (tagline.textContent) {
+        tagline.textContent = tagline.textContent.slice(0, -1);
+        await sleep(22);
+      }
+      await sleep(300);
+      await typeLine(TAGLINES[i]);
+      cursor.parentElement!.classList.remove("typing");
+      loop((i + 1) % TAGLINES.length);
+    };
+    loop(1);
+
+    // Mouse parallax: the two halves drift in opposite directions.
+    let queued = false;
+    addEventListener(
+      "pointermove",
+      (e) => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => {
+          queued = false;
+          hero.style.setProperty("--mx", String(e.clientX / innerWidth - 0.5));
+          hero.style.setProperty("--my", String(e.clientY / innerHeight - 0.5));
+        });
+      },
+      { passive: true },
+    );
+  }
+
+  // Shinji has a limited number of lines.
+  const LINES = [
+    "I mustn't run away.",
+    "I mustn't run away.",
+    "I mustn't run away…",
+    "…",
+    "fine. I'll get in the robot.",
+    "why do you keep poking me",
+    "go look at the projects instead",
+    "Congratulations!",
+  ];
+  const bubble = document.getElementById("shinji-says")!;
+  let said = 0;
+  let hide = 0;
+  document.getElementById("shinji")!.addEventListener("click", () => {
+    bubble.textContent = LINES[Math.min(said++, LINES.length - 1)];
+    bubble.classList.add("show");
+    clearTimeout(hide);
+    hide = window.setTimeout(() => bubble.classList.remove("show"), 2600);
+    if (said === LINES.length) said = 0;
+  });
+</script>

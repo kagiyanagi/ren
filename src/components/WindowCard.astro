@@ -5,20 +5,52 @@ type Props = {
 
 const { bordered = true } = Astro.props;
 const baseClasses =
-  "w-full mx-auto bg-gradient-to-br relative pb-5 from-white/[0.001] to-white/[0.01] rounded-lg overflow-hidden";
+  "window w-full mx-auto bg-gradient-to-br relative pb-5 from-black/90 to-neutral-950/90 rounded-lg overflow-hidden";
 const borderClasses = bordered ? "border-2 border-white" : "";
 ---
 
-<div class={`${baseClasses} ${borderClasses}`}>
+<div class={`${baseClasses} ${borderClasses}`} data-reveal>
   <div class="flex items-center justify-start px-4 py-2 bg-white/95">
-    <div class="flex space-x-2">
-      <div class="w-3 h-3 rounded-full bg-black"></div>
-      <div class="w-3 h-3 rounded-full bg-black"></div>
-      <div class="w-3 h-3 rounded-full bg-black"></div>
+    <div class="window-dots flex space-x-2" aria-hidden="true">
+      <span data-dot="close" data-tip="close">×</span>
+      <span data-dot="min" data-tip="minimize">–</span>
+      <span data-dot="max" data-tip="maximize">+</span>
     </div>
   </div>
 
-  <div class="p-6 tracking-wider">
+  <div class="window-body p-6 tracking-wider">
     <slot />
   </div>
 </div>
+
+<script>
+  import { pick, sleep, toast } from "@/lib/fx";
+
+  // The three dots actually do things. Sort of.
+  const NOPE = [
+    "Nope, it's back.",
+    "Windows don't close here. It's a feature.",
+    "You can't get rid of my projects that easily.",
+    "segfault while closing. rebooting window…",
+  ];
+  document.addEventListener("click", async (e) => {
+    const dot = (e.target as HTMLElement).closest<HTMLElement>("[data-dot]");
+    const win = dot?.closest<HTMLElement>(".window");
+    if (!dot || !win || win.classList.contains("crt-off")) return;
+    const kind = dot.dataset.dot;
+    if (kind === "min") return win.classList.toggle("minimized");
+    if (kind === "max") {
+      win.classList.remove("shake");
+      void win.offsetWidth;
+      win.classList.add("shake");
+      return toast("Maximize? In this economy?", "warning");
+    }
+    win.classList.add("crt-off");
+    await sleep(1600);
+    win.classList.remove("crt-off");
+    win.classList.add("crt-on");
+    toast(pick(NOPE), "info");
+    await sleep(600);
+    win.classList.remove("crt-on");
+  });
+</script>

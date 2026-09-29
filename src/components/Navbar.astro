@@ -2,18 +2,25 @@
 import { NAV_LINKS as links } from "@/consts";
 ---
 
-<nav class="w-full !z-[9999] py-5 px-4 bg-black/90 backdrop-blur-xl">
+<nav class="relative w-full !z-[9999] py-5 px-4 bg-black/90 backdrop-blur-xl">
   <div
     class="w-full grid gap-4 place-items-center grid-cols-1 md:flex md:justify-between md:px-4"
   >
-    <a href="/" aria-label="Home">
-      <div
-        id="logo"
-        class="pt-2 pb-1 !grid !place-items-center select-none leading-none px-4 transition-all ease-in-out bg-white text-black scale-110 hover:bg-black hover:text-white data-[scrolled]:bg-black data-[scrolled]:text-white data-[scrolled]:scale-100 data-[scrolled]:hover:bg-white data-[scrolled]:hover:text-black"
+    <div class="flex items-center gap-4">
+      <a href="/" aria-label="Home" id="logo-link">
+        <div
+          id="logo"
+          class="pt-2 pb-1 !grid !place-items-center select-none leading-none px-4 transition-all ease-in-out bg-white text-black scale-110 hover:bg-black hover:text-white data-[scrolled]:bg-black data-[scrolled]:text-white data-[scrolled]:scale-100 data-[scrolled]:hover:bg-white data-[scrolled]:hover:text-black"
+        >
+          ^#^
+        </div>
+      </a>
+      <span
+        id="nav-path"
+        class="hidden md:inline text-white/40 text-sm"
+        aria-hidden="true">guest@kagiyanagi:~$</span
       >
-        ^#^
-      </div>
-    </a>
+    </div>
     <div class="flex flex-wrap gap-4 md:pr-5 justify-center">
       <div class="hidden md:block" aria-hidden="true">/</div>
       {
@@ -25,7 +32,7 @@ import { NAV_LINKS as links } from "@/consts";
               target="_blank"
               rel="noopener noreferrer"
             >
-              <div>{link.title}</div>
+              <div data-scramble-hover>{link.title}</div>
             </a>
             <div class="hidden md:block" aria-hidden="true">
               /
@@ -35,11 +42,76 @@ import { NAV_LINKS as links } from "@/consts";
       }
     </div>
   </div>
+  <div class="scroll-progress" aria-hidden="true"></div>
 </nav>
 
 <script>
-  const logo = document.getElementById("logo");
-  const update = () => logo?.toggleAttribute("data-scrolled", scrollY > 100);
+  import { calm, pick, scramble, toast } from "@/lib/fx";
+
+  const logo = document.getElementById("logo")!;
+  const update = () => logo.toggleAttribute("data-scrolled", scrollY > 100);
   update();
   window.addEventListener("scroll", update, { passive: true });
+
+  // The logo blinks now and then, and has opinions about being clicked.
+  let face = "^#^";
+  const show = (f: string) => (logo.textContent = f);
+  if (!calm()) {
+    const blink = () => {
+      if (face === "^#^") {
+        show("-#-");
+        setTimeout(() => show(face), 140);
+      }
+      setTimeout(blink, 2500 + Math.random() * 5000);
+    };
+    setTimeout(blink, 3000);
+  }
+
+  const MOODS = ["^_^", "o_o", "^o^", "-_-", ">_<", "T_T"];
+  let pokes = 0;
+  let calmDown = 0;
+  document.getElementById("logo-link")!.addEventListener("click", (e) => {
+    if (location.pathname !== "/") return;
+    e.preventDefault();
+    scrollTo({ top: 0, behavior: "smooth" });
+    pokes++;
+    clearTimeout(calmDown);
+    calmDown = window.setTimeout(() => {
+      pokes = 0;
+      face = "^#^";
+      show(face);
+      logo.classList.remove("flipped");
+    }, 2500);
+    if (pokes === 6) toast("okay you can stop poking me now", "warning");
+    if (pokes === 12) {
+      face = "(╯°□°)╯";
+      logo.classList.add("flipped");
+      toast("┻━┻ that's it. table flipped.", "error");
+    } else if (pokes < 12) face = pick(MOODS);
+    show(face);
+  });
+
+  // Current section as a shell path, e.g. guest@kagiyanagi:~/my-projects$
+  const path = document.getElementById("nav-path")!;
+  const sections = document.querySelectorAll<HTMLElement>("section[data-path]");
+  const seen = new Map<Element, boolean>();
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((en) => seen.set(en.target, en.isIntersecting));
+      const current = [...sections].find((s) => seen.get(s));
+      const next = `guest@kagiyanagi:~${current ? "/" + current.dataset.path : ""}$`;
+      if (path.textContent !== next) scramble(path, next, 400);
+    },
+    { rootMargin: "-45% 0px -45% 0px" },
+  );
+  sections.forEach((s) => io.observe(s));
+
+  document
+    .querySelectorAll<HTMLElement>("[data-scramble-hover]")
+    .forEach((el) => {
+      const text = el.textContent!.trim();
+      el.closest("a")!.addEventListener("pointerenter", () =>
+        scramble(el, text, 350),
+      );
+    });
 </script>

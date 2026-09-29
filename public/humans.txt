@@ -1,0 +1,20 @@
+/* TEAM */
+  Everything: Aman (a.k.a. kagiyanagi / ren / aqua)
+  Site: https://kagiyanagi.vercel.app
+  GitHub: https://github.com/kagiyanagi
+  From: India
+
+/* THANKS */
+  Theme concept: @ArnavK-09
+  Hero + about ASCII art: anime.en.utf8art.com
+  Mushroom Shop: stonestoryrpg (newgrounds)
+  Shinji: for not running away
+
+/* SITE */
+  Built with: Astro, Tailwind, one overworked fragment shader
+  Fonts: VCR OSD Neue, RetroByte
+  Standards: HTML, CSS, GLSL
+  Last update: check the footer. it's accurate to the millisecond.
+
+/* PS */
+  Press ~ on the site.

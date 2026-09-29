@@ -1,0 +1,200 @@
+---
+import { GITHUB_REPO } from "@/consts";
+---
+
+<div id="tip" role="tooltip" hidden></div>
+
+<div id="saver" hidden aria-hidden="true">
+  <div id="saver-logo">^#^</div>
+  <p
+    id="saver-hits"
+    class="absolute bottom-5 inset-x-0 text-center text-xs text-white/40"
+  >
+  </p>
+</div>
+
+<script define:vars={{ repo: GITHUB_REPO }}>
+  // Printed for whoever opens devtools. define:vars keeps this is:inline, fine.
+  console.log(
+    "%c ^#^ ",
+    "font: 700 42px monospace; color: #000; background: #fff; padding: 4px 12px;",
+  );
+  console.log(
+    `%chey, you opened devtools. respect.\n\n  press ~ for a terminal\n  the konami code does something\n  so does typing a few words on the page (arch, sudo, nerv…)\n\nsource: https://github.com/${repo}`,
+    "font: 13px monospace; color: #aaa; line-height: 1.6;",
+  );
+</script>
+
+<script>
+  import {
+    angel,
+    calm,
+    degauss,
+    fx,
+    matrix,
+    pick,
+    toast,
+    typing,
+  } from "@/lib/fx";
+
+  // --- tab title
+  const title = document.title;
+  let back = 0;
+  document.addEventListener("visibilitychange", () => {
+    clearTimeout(back);
+    if (document.hidden) {
+      document.title = pick([
+        "come back :(",
+        "(-_-) zzz",
+        "^#^ …hello?",
+        "don't leave me on read",
+      ]);
+    } else {
+      document.title = "oh, you're back ^_^";
+      back = window.setTimeout(() => (document.title = title), 1800);
+    }
+  });
+
+  // --- tooltips: one element that follows the cursor over any [data-tip]
+  const tip = document.getElementById("tip")!;
+  let tipFor: HTMLElement | null = null;
+  const hideTip = () => {
+    tipFor = null;
+    tip.hidden = true;
+  };
+  addEventListener("pointerover", (e) => {
+    const el = (e.target as Element).closest<HTMLElement>("[data-tip]");
+    if (el === tipFor) return;
+    if (!el) return hideTip();
+    tipFor = el;
+    tip.textContent = el.dataset.tip!;
+    tip.hidden = false;
+  });
+  addEventListener(
+    "pointermove",
+    (e) => {
+      if (!tipFor) return;
+      const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8);
+      const y =
+        e.clientY + 20 + tip.offsetHeight > innerHeight
+          ? e.clientY - tip.offsetHeight - 10
+          : e.clientY + 20;
+      tip.style.translate = `${x}px ${y}px`;
+    },
+    { passive: true },
+  );
+  addEventListener("scroll", hideTip, { passive: true });
+  document.documentElement.addEventListener("pointerleave", hideTip);
+
+  // --- copy
+  document.addEventListener("copy", (e) => {
+    if (!typing(e.target)) toast("Copied. Use it wisely.", "info", 2200);
+  });
+
+  // --- typed words + konami. Ignored while typing into a field.
+  const KONAMI =
+    "ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight b a";
+  const WORDS: Record<string, () => void> = {
+    arch: () => toast("btw.", "info"),
+    sudo: () =>
+      toast(
+        "guest is not in the sudoers file. This incident will be reported.",
+        "error",
+      ),
+    hello: () => toast("hi :)", "success"),
+    shinji: () => toast("Get in the robot.", "warning"),
+    nerv: () =>
+      toast("God's in his heaven. All's right with the world.", "info", 5000),
+    matrix: () => matrix(),
+    degauss: degauss,
+    ":q": () =>
+      toast("E37: No write since last change (add ! to override)", "error"),
+    ":q!": () => toast("There is no escape. But thanks for trying.", "warning"),
+  };
+  let keys: string[] = [];
+  let buf = "";
+  addEventListener("keydown", (e) => {
+    if (typing(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
+    keys = [...keys, e.key].slice(-10);
+    if (keys.join(" ").toLowerCase() === KONAMI.toLowerCase()) {
+      keys = [];
+      angel();
+      return;
+    }
+    if (e.key.length !== 1) return;
+    buf = (buf + e.key.toLowerCase()).slice(-12);
+    // Longest match first so ":q!" isn't eaten by ":q".
+    const hit = Object.keys(WORDS)
+      .sort((a, b) => b.length - a.length)
+      .find((w) => buf.endsWith(w));
+    if (hit) {
+      buf = "";
+      WORDS[hit]();
+    }
+  });
+
+  // --- screensaver after a while of doing nothing
+  const saver = document.getElementById("saver")!;
+  const logo = document.getElementById("saver-logo")!;
+  const hitsEl = document.getElementById("saver-hits")!;
+  const IDLE_MS = 90_000;
+  let idle = 0;
+  let raf = 0;
+  let corners = 0;
+
+  function wake() {
+    clearTimeout(idle);
+    if (!saver.hidden) {
+      saver.hidden = true;
+      cancelAnimationFrame(raf);
+      fx({ kind: "mode", mode: "sleep", on: false });
+    }
+    idle = window.setTimeout(snooze, IDLE_MS);
+  }
+
+  function snooze() {
+    if (document.hidden || document.querySelector("dialog[open]"))
+      return wake();
+    saver.hidden = false;
+    fx({ kind: "mode", mode: "sleep", on: true });
+    hitsEl.textContent = "corners hit: " + corners;
+    let x = Math.random() * (innerWidth - 120);
+    let y = Math.random() * (innerHeight - 60);
+    let vx = 2;
+    let vy = 1.6;
+    const faces = ["^#^", "-_-", "o_o", "^_^", "u_u", ">_<", "owo"];
+    const step = () => {
+      const w = logo.offsetWidth;
+      const h = logo.offsetHeight;
+      x += vx;
+      y += vy;
+      const hitX = x <= 0 || x + w >= innerWidth;
+      const hitY = y <= 0 || y + h >= innerHeight;
+      if (hitX) vx = -vx;
+      if (hitY) vy = -vy;
+      if (hitX || hitY) logo.textContent = pick(faces);
+      if (hitX && hitY) {
+        corners++;
+        hitsEl.textContent = `corners hit: ${corners}. you saw that, right?`;
+      }
+      x = Math.max(0, Math.min(x, innerWidth - w));
+      y = Math.max(0, Math.min(y, innerHeight - h));
+      logo.style.translate = `${x}px ${y}px`;
+      raf = requestAnimationFrame(step);
+    };
+    step();
+  }
+
+  if (!calm()) {
+    for (const ev of [
+      "pointermove",
+      "pointerdown",
+      "keydown",
+      "scroll",
+      "wheel",
+      "touchstart",
+    ])
+      addEventListener(ev, wake, { passive: true });
+    wake();
+  }
+</script>

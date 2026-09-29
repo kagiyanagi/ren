@@ -1,0 +1,5 @@
+# hi robots. the humans.txt is for the other guys.
+User-agent: *
+Allow: /
+
+Sitemap: https://kagiyanagi.vercel.app/sitemap-index.xml

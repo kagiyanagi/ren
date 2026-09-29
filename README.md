@@ -77,20 +77,24 @@ src/
 │   ├── house.gif      - used in the "Contact me" section
 │   └── villain.png    - used in the "About me" section
 ├── components/      # Astro components, all server-rendered. Per-component <script> tags ship client JS.
-│   ├── BaseHead.astro       - <head> contents, OG/Twitter/JSON-LD, font preload
-│   ├── BinaryBackground.astro - animated 0/1 field used behind the hero and footer
-│   ├── Breadcrumb.astro     - white "tech" pill
+│   ├── BaseHead.astro       - <head> contents, OG/Twitter/JSON-LD, font preload, pre-paint phosphor/boot check
+│   ├── Boot.astro           - once-per-session MAGI boot screen + CRT power-on
+│   ├── Breadcrumb.astro     - white "tech" sticker with a data-tip note (TECH_NOTES)
+│   ├── CRT.astro            - full-page WebGL shader: 0/1 glyph field, glitches, matrix/alert modes
 │   ├── Contact.astro        - contact form (native validation, underscore caret, cooldown)
-│   ├── Footer.astro         - footer with dynamic year
+│   ├── Extras.astro         - custom [data-tip] tooltip, typed-word + konami easter eggs, idle screensaver, tab title, console note
+│   ├── Footer.astro         - footer with dynamic year and my IST clock
 │   ├── Hero.astro           - landing hero block
 │   ├── Navbar.astro         - top nav, scroll-styled logo
 │   ├── Notification.astro   - global toast root, exposes window.showNotification
 │   ├── ProjectCard.astro    - project tile (composed inside WindowCard)
-│   ├── Section.astro        - titled section wrapper (`<Title />` styling)
-│   └── WindowCard.astro     - "macOS window" frame used by ProjectCard / Contact
+│   ├── Section.astro        - titled section wrapper (`<Title />` styling, decodes on scroll)
+│   ├── Terminal.astro       - `~` drop-down terminal (<dialog>), all the commands live here
+│   └── WindowCard.astro     - "macOS window" frame used by ProjectCard / Contact (working dots)
 ├── layouts/
 │   └── Layout.astro         - shared HTML shell (head + nav + main + footer + notification root)
 ├── lib/
+│   ├── fx.ts                - client-side helpers: text scramble, phosphor themes, shared easter eggs
 │   └── github.ts            - build-time fetcher for GitHub pinned repos + latest commit
 ├── pages/
 │   ├── 404.astro            - uses <Layout>, links to /index, the contact form, and a refresh
@@ -107,6 +111,8 @@ public/
 ├── favicon.ico      - actual favicon
 ├── muichiro.ico     - alternate favicon
 ├── muichiro.svg     - SVG favicon
+├── humans.txt       - credits, linked from the footer
+├── robots.txt       - allow all + sitemap
 ├── image.jpg        - default OG/Twitter share image
 ├── terminal_bell.mp3 - sound played on backspace in empty input
 └── google5ebaed34e5db2abf.html - Google Search Console verification
@@ -121,7 +127,8 @@ public/
 Everything user-facing is driven from this file. Edit here, not in templates:
 
 - `SITE_TITLE`, `SITE_DESCRIPTION`, `TWITTER_HANDLE` → fed into `<BaseHead>` and JSON-LD.
-- `KNOWN_TECH` → renders the "Technologies I like" pills.
+- `KNOWN_TECH` → renders the "Technologies I like" pills; `TECH_NOTES` → their hover notes.
+- `TAGLINES` → the hero subtitle rotation (first one is what ships in the HTML).
 - `PROJECTS` → project cards, used when pinned repos can't be fetched.
 - `NAV_LINKS` → top-nav entries (external `https://…` URLs, opened in a new tab).
 - `GITHUB_USERNAME` / `GITHUB_REPO` → used by the index page's last-commit fetch, the footer link, and the pinned-repos fetcher.
@@ -160,6 +167,14 @@ At build time `src/lib/github.ts` makes one GraphQL request (requires `GITHUB_TO
   - Custom pixel cursors mapped per-element type (body, text inputs, links/buttons).
   - The CRT effects: `.terminal-overlay` (scanlines), `.terminal-flicker`, `.terminal-glow`, `.terminal-scanline`, `.blinking-cursor`, `.hero-bg`. Inputs use native `caret-shape: underscore` (Chromium; other browsers show a normal caret).
 - **Theme:** black background, white text, `font-pixel` (RetroByte) for headings, `VCR` for body. Selection inverts to white/black.
+- **CRT glass:** `body::before` lays scanlines, vignette and grain over everything. Picking a phosphor (`theme green|amber` in the terminal) sets `html[data-phosphor]`, and `body::after` multiplies the whole page with that colour.
+- **Scroll reveals** use native `animation-timeline: view()` inside `@supports`, so browsers without it just show the content.
+
+### Effects and easter eggs
+
+The shader (`CRT.astro`) listens for `fx` events (`glitch`, `mode`), and everything else fires them through `src/lib/fx.ts`. The boot screen, typewriter, glitches and screensaver all turn off under `prefers-reduced-motion`, and the shader renders a single still frame.
+
+Spoilers: `~` opens a terminal (`help`, plus a few hidden commands), the konami code, typing `arch` / `sudo` / `nerv` / `matrix` / `degauss` / `:q` on the page, poking the logo or Shinji, the window dots on the cards, and leaving the tab alone for 90 seconds.
 
 ---
 
