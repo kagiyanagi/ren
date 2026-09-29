@@ -7,19 +7,16 @@ const { className = "" } = Astro.props;
 const passedClass = (Astro.props as any).class ?? className ?? "";
 ---
 
-<div
-  class={`hero-bg hero-bg-animate ${passedClass}`}
-  data-binary-bg
-  aria-hidden="true"
->
-</div>
+<div class={`hero-bg ${passedClass}`} data-binary-bg aria-hidden="true"></div>
 
-<script is:inline>
-  const targets = Array.from(document.querySelectorAll("[data-binary-bg]"));
+<script>
+  // Deferred module script: runs after parse, so it also finds the footer's
+  // instance (the old is:inline version ran mid-page and only saw the hero).
+  const targets = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-binary-bg]"),
+  );
 
-  function generateBinary(el) {
-    if (!el) return;
-
+  function generateBinary(el: HTMLElement) {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
@@ -44,13 +41,15 @@ const passedClass = (Astro.props as any).class ?? className ?? "";
   }
 
   function generateAll() {
-    targets.forEach((el) => generateBinary(el));
+    targets.forEach(generateBinary);
   }
 
   if (targets.length) {
     generateAll();
 
-    setInterval(generateAll, 300);
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setInterval(generateAll, 300);
+    }
 
     window.addEventListener("resize", generateAll);
   }

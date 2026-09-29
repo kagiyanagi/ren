@@ -16,7 +16,7 @@ import {
   USE_PINNED_REPOS,
   type Project,
 } from "@/consts";
-import { fetchPinnedProjects } from "@/lib/github";
+import { fetchLatestCommitDate, fetchPinnedProjects } from "@/lib/github";
 
 let projects: readonly Project[] = PROJECTS;
 if (USE_PINNED_REPOS) {
@@ -24,23 +24,7 @@ if (USE_PINNED_REPOS) {
   if (pinned?.length) projects = pinned;
 }
 
-let commitISO = null;
-try {
-  const res = await fetch(
-    `https://api.github.com/repos/${GITHUB_REPO}/commits?per_page=1`,
-  );
-  if (res.ok) {
-    const json = await res.json();
-    commitISO =
-      json?.[0]?.commit?.committer?.date ??
-      json?.[0]?.commit?.author?.date ??
-      null;
-  } else {
-    console.error("GitHub API responded with status", res.status);
-  }
-} catch (err) {
-  console.error("Failed fetching latest commit:", err);
-}
+const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
 ---
 
 <Layout title="Aman - I go by the username 'kagiyanagi' on the internet">
@@ -94,7 +78,7 @@ try {
         </p>
         <p
           id="lastUpdated"
-          class="text-zinc-600 text-xl custom-cursor-help"
+          class="text-zinc-400 text-xl custom-cursor-help"
           title="This data is coming from my GitHub repository's latest commit."
           data-commit={commitISO}
         >
@@ -107,6 +91,7 @@ try {
           const commitTime = commitISO ? new Date(commitISO).getTime() : null;
 
           function updateSince() {
+            if (!el) return;
             if (!commitTime) {
               el.textContent = "Last updated: unknown";
               return;
@@ -128,10 +113,10 @@ try {
             const d = Math.floor(diff / 24);
 
             el.textContent = `Last updated: ${d}d ${h}h ${m}m ${s}s ${ms}ms ago`;
+            requestAnimationFrame(updateSince);
           }
 
           updateSince();
-          setInterval(updateSince, 16);
         </script>
       </div>
     </div>

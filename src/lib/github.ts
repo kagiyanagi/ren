@@ -216,6 +216,30 @@ async function fetchViaScrape(username: string): Promise<Project[] | null> {
   return projects.length ? projects : null;
 }
 
+/** ISO date of the latest commit on `owner/repo`, or null on any failure. */
+export async function fetchLatestCommitDate(
+  slug: string,
+): Promise<string | null> {
+  try {
+    const res = await fetchWithTimeout(
+      `${REST_BASE}/repos/${slug}/commits?per_page=1`,
+      { headers: baseHeaders() },
+    );
+    if (!res.ok) {
+      console.warn(`[github] commit fetch failed for ${slug}: ${res.status}`);
+      return null;
+    }
+    const json = (await res.json()) as Array<{
+      commit?: { committer?: { date?: string }; author?: { date?: string } };
+    }>;
+    const commit = json?.[0]?.commit;
+    return commit?.committer?.date ?? commit?.author?.date ?? null;
+  } catch (err) {
+    console.warn("[github] fetchLatestCommitDate failed:", err);
+    return null;
+  }
+}
+
 /**
  * Fetch the given user's pinned GitHub repos for use as portfolio entries.
  * Returns null on any failure so callers can fall back to a static list.

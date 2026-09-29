@@ -23,7 +23,7 @@ export const SEO_KEYWORDS = [
 export const TWITTER_HANDLE = "@kagiyanagi";
 
 export const KNOWN_TECH =
-  `Astro,Tailwind CSS,JavaScript,Python,CSS,HTML,C,C++,Bash,VIM,React,Git,Photoshop,Figma,Pandas,NumPy,Hyprland, Davinci Resolve, Docker`.split(
+  `Astro,Tailwind CSS,JavaScript,Python,CSS,HTML,C,C++,Bash,VIM,React,Git,Photoshop,Figma,Pandas,NumPy,Hyprland,Davinci Resolve,Docker`.split(
     ",",
   );
 

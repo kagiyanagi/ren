@@ -54,8 +54,6 @@ export const POST: APIRoute = async ({ request }) => {
         { "Retry-After": String(retryAfter) },
       );
     }
-    rateLimit.set(clientId, now);
-
     const raw = await safeReadText(request, MAX_BODY_BYTES);
     if (!raw) return json(400, { ok: false, error: "Empty request body." });
 
@@ -69,6 +67,7 @@ export const POST: APIRoute = async ({ request }) => {
     const validated = validateIncomingBody(parsed);
     if (!validated.ok) return json(400, { ok: false, error: validated.error });
 
+    rateLimit.set(clientId, now);
     const text = formatTelegramMessage(validated.value);
 
     const telegramResp = await fetch(
@@ -128,7 +127,10 @@ function validateIncomingBody(
   const b = body as IncomingBody;
   const name = normalizeString(b.name);
   const email = normalizeString(b.email);
-  const message = normalizeString(b.message);
+  const message =
+    typeof b.message === "string"
+      ? b.message.replace(/\r\n?/g, "\n").trim()
+      : "";
 
   if (!name) return { ok: false, error: "Name is required." };
   if (!email) return { ok: false, error: "Email is required." };

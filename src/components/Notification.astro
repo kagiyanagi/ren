@@ -5,7 +5,7 @@
 <div
   id="__notification_root"
   aria-live="polite"
-  class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none"
+  class="fixed bottom-6 inset-x-0 px-4 z-50 pointer-events-none"
 >
 </div>
 
@@ -21,9 +21,9 @@
       el.setAttribute("role", "status");
 
       const bgMap = {
-        success: "bg-emerald-600",
+        success: "bg-emerald-700",
         error: "bg-rose-600",
-        warning: "bg-amber-500",
+        warning: "bg-amber-700",
         info: "bg-slate-700",
       };
       const bg = bgMap[type] || bgMap.info;
@@ -35,7 +35,9 @@
 
       const close = document.createElement("button");
       close.className = "text-white/80 hover:text-white ml-4";
-      close.innerHTML = "✕";
+      close.type = "button";
+      close.textContent = "✕";
+      close.setAttribute("aria-label", "Dismiss notification");
       close.addEventListener("click", () => {
         hide(el);
       });

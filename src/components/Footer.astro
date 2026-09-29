@@ -1,5 +1,6 @@
 ---
 import { GITHUB_REPO } from "@/consts";
+import BinaryBackground from "@/components/BinaryBackground.astro";
 const year = new Date().getFullYear();
 ---
 
@@ -8,7 +9,7 @@ const year = new Date().getFullYear();
   class="grid relative place-items-center text-center mt-4 bg-white/[0.001]"
 >
   <div class="h-40 overflow-hidden absolute pointer-events-none">
-    <div class="hero-bg" data-binary-bg aria-hidden="true"></div>
+    <BinaryBackground />
   </div>
   <a
     href={`https://github.com/${GITHUB_REPO}`}

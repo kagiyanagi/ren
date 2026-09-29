@@ -1,5 +1,4 @@
 ---
-import { ClientRouter } from "astro:transitions";
 import "@/styles/global.css";
 import {
   SITE_DESCRIPTION,
@@ -112,5 +111,3 @@ const structuredData = [
 <meta property="twitter:site" content={TWITTER_HANDLE} />
 
 <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
-
-<ClientRouter />

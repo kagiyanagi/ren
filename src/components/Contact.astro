@@ -2,16 +2,16 @@
 import WindowCard from "@/components/WindowCard.astro";
 
 const inputClass =
-  "bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none transition-colors custom-underscore-caret w-full";
+  "bg-white/5 rounded px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-colors custom-underscore-caret w-full";
 const labelClass = "text-white/70 text-sm";
 const errorClass = "text-red-400 text-sm mt-1";
 ---
 
 <WindowCard bordered={false}>
-  <h2 class="text-xl font-medium text-white mb-4">
+  <h3 class="text-xl font-medium text-white mb-4">
     <span class="text-white/70 mr-2">❯</span>
     Get in touch
-  </h2>
+  </h3>
   <p class="text-white/80 text-sm font-thin mb-6">
     Want to send me a message? Then go ahead!
   </p>
@@ -24,6 +24,9 @@ const errorClass = "text-red-400 text-sm mt-1";
           id="name"
           name="name"
           placeholder="Your name"
+          autocomplete="name"
+          maxlength="80"
+          aria-describedby="err-name"
           required
           class={inputClass}
         />
@@ -39,6 +42,10 @@ const errorClass = "text-red-400 text-sm mt-1";
           id="email"
           name="email"
           placeholder="your@email.com"
+          inputmode="email"
+          autocomplete="email"
+          maxlength="254"
+          aria-describedby="err-email"
           required
           class={inputClass}
         />
@@ -54,6 +61,8 @@ const errorClass = "text-red-400 text-sm mt-1";
           name="message"
           placeholder="Your message..."
           rows="5"
+          maxlength="4000"
+          aria-describedby="err-message"
           required
           class={`${inputClass} resize-none`}></textarea>
         <span id="fake-caret-message" class="fake-caret hidden">_</span>
@@ -89,11 +98,13 @@ const errorClass = "text-red-400 text-sm mt-1";
       function clearError(el, errEl) {
         if (!el) return;
         el.classList.remove("ring-2", "ring-red-400");
+        el.removeAttribute("aria-invalid");
         if (errEl) errEl.textContent = "";
       }
       function setError(el, errEl, msg) {
         if (!el) return;
         el.classList.add("ring-2", "ring-red-400");
+        el.setAttribute("aria-invalid", "true");
         if (errEl) errEl.textContent = msg;
       }
       function validate() {
@@ -189,7 +200,11 @@ const errorClass = "text-red-400 text-sm mt-1";
       focusNextOnEnter(emailEl, msgEl);
       if (msgEl) {
         msgEl.addEventListener("keydown", (event) => {
-          if (event.key !== "Enter" || event.isComposing || !event.ctrlKey)
+          if (
+            event.key !== "Enter" ||
+            event.isComposing ||
+            !(event.ctrlKey || event.metaKey)
+          )
             return;
           event.preventDefault();
           if (typeof form.requestSubmit === "function") form.requestSubmit();
@@ -326,7 +341,6 @@ const errorClass = "text-red-400 text-sm mt-1";
       } else {
         div.style.height = `${element.clientHeight}px`;
         div.style.overflowY = "scroll";
-        div.style.scrollTop = element.scrollTop;
       }
       div.style.width = `${element.clientWidth}px`;
       div.textContent = element.value.substring(0, position);
@@ -365,8 +379,8 @@ const errorClass = "text-red-400 text-sm mt-1";
         if (!input || !caret) return;
         const updateCaret = () => {
           const coords = getCaretCoordinates(input);
-          caret.style.top = `${coords.top + input.scrollTop}px`;
-          caret.style.left = `${coords.left}px`;
+          caret.style.top = `${coords.top - input.scrollTop}px`;
+          caret.style.left = `${coords.left - input.scrollLeft}px`;
           caret.classList.remove("hidden");
         };
         input.addEventListener("focus", updateCaret);

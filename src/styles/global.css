@@ -59,13 +59,9 @@ code {
   color: #000;
 }
 
-::-moz-selection {
-  background: #fff;
-  color: #000;
-}
-
-::-webkit-scrollbar {
-  width: 8px;
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.35) #000;
 }
 
 img {
@@ -98,10 +94,6 @@ img {
     rgba(0, 0, 0, 1) 85%,
     rgba(0, 0, 0, 0) 100%
   );
-}
-
-.hero-bg-animate {
-  transition: opacity 0.15s ease;
 }
 
 .terminal-overlay {
@@ -214,13 +206,6 @@ img {
   user-select: none;
 }
 
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 @keyframes blink {
   0%,
   50% {
@@ -279,5 +264,14 @@ img {
 
   96% {
     opacity: 0.93;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

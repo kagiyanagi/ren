@@ -6,7 +6,7 @@ import Layout from "@/layouts/Layout.astro";
   <section
     class="bg-black min-h-[100svh] w-full text-white flex items-center justify-center relative overflow-hidden px-4 sm:px-6"
   >
-    <main class="w-full max-w-[640px] text-center space-y-4 sm:space-y-6">
+    <div class="w-full max-w-[640px] text-center space-y-4 sm:space-y-6">
       <h1 class="text-center">
         <span
           class="bg-white text-black px-4 py-1 inline-block text-lg sm:text-xl"
@@ -17,7 +17,9 @@ import Layout from "@/layouts/Layout.astro";
       <p class="text-sm sm:text-base">An error has occurred. To continue:</p>
       <p class="text-sm sm:text-base leading-relaxed">
         * Return to the homepage.<br />
-        * Send me an email about this error and try later.
+        * Report it via the <a href="/#contactme" class="underline"
+          >contact form</a
+        > and try later.
       </p>
       <nav class="text-sm sm:text-base" aria-label="Not found navigation">
         <a
@@ -35,7 +37,7 @@ import Layout from "@/layouts/Layout.astro";
           refresh
         </a>
       </nav>
-    </main>
+    </div>
   </section>
   <script>
     const refresh = document.getElementById("refresh-link");
