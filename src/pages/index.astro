@@ -14,6 +14,7 @@ import {
   TECH_NOTES,
   GITHUB_REPO,
   GITHUB_USERNAME,
+  NAV_LINKS,
   type Project,
 } from "@/consts";
 import { fetchLatestCommitDate, fetchPinnedProjects } from "@/lib/github";
@@ -168,13 +169,46 @@ const commitISO = await fetchLatestCommitDate(GITHUB_REPO);
     <div
       class="w-full grid place-items-center grid-cols-1 sm:grid-cols-2 gap-12 sm:gap-0"
     >
-      <div class="ascii-shade flex">
-        <Image
-          alt="Mushroom Shop, A cozy little shop, run by a certain eccentric shopkeep. source:(https://www.newgrounds.com/art/view/stonestoryrpg/mushroom-shop)"
-          src={House}
-          data-tip="the shopkeep says hi."
-          class="brightness-200 max-w-xs sm:max-w-sm mix-blend-screen"
-        />
+      <div class="flex flex-col items-center gap-6">
+        <div class="ascii-shade flex">
+          <Image
+            alt="Mushroom Shop, A cozy little shop, run by a certain eccentric shopkeep. source:(https://www.newgrounds.com/art/view/stonestoryrpg/mushroom-shop)"
+            src={House}
+            data-tip="the shopkeep says hi."
+            class="brightness-200 max-w-xs sm:max-w-sm mix-blend-screen"
+          />
+        </div>
+        <p
+          class="margin-note hidden sm:flex items-center gap-2 rotate-[-3deg]"
+          aria-hidden="true"
+        >
+          the shopkeep delivers every letter by hand.
+          <svg viewBox="0 0 70 40" class="w-12 rotate-12"
+            ><path d="M3 30 C 18 8, 40 4, 64 14 M55 6 L65 14 L54 20"
+            ></path></svg
+          >
+        </p>
+        <div class="text-sm text-white/60 font-thin tracking-wider">
+          <p class="text-white/80">
+            <span class="text-white/40">$</span> ls ~/elsewhere
+          </p>
+          <ul class="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+            {
+              NAV_LINKS.map((l) => (
+                <li>
+                  <a
+                    href={l.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="hover:text-white hover:underline"
+                  >
+                    {l.title.toLowerCase()}/
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
       </div>
       <div class="w-full max-w-xl">
         <Contact />
